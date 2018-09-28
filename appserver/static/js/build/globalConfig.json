@@ -1,0 +1,89 @@
+{
+    "pages": {
+        "configuration": {
+            "description": "Set up your add-on", 
+            "title": "Configuration", 
+            "tabs": [
+                {
+                    "entity": [
+                        {
+                            "required": true, 
+                            "defaultValue": "", 
+                            "help": "", 
+                            "field": "puppet_enterprise_install", 
+                            "validators": [
+                                {
+                                    "maxLength": 8192, 
+                                    "minLength": 0, 
+                                    "errorMsg": "Max length of text input is 8192", 
+                                    "type": "string"
+                                }
+                            ], 
+                            "label": "Puppet Server", 
+                            "type": "text"
+                        }, 
+                        {
+                            "required": true, 
+                            "defaultValue": "", 
+                            "encrypted": true, 
+                            "help": "", 
+                            "field": "auth_token", 
+                            "validators": [
+                                {
+                                    "maxLength": 8192, 
+                                    "minLength": 0, 
+                                    "errorMsg": "Max length of password is 8192", 
+                                    "type": "string"
+                                }
+                            ], 
+                            "label": "Auth Token", 
+                            "type": "text"
+                        }, 
+                        {
+                            "required": true, 
+                            "defaultValue": "", 
+                            "help": "", 
+                            "field": "splunk_server", 
+                            "validators": [
+                                {
+                                    "maxLength": 8192, 
+                                    "minLength": 0, 
+                                    "errorMsg": "Max length of text input is 8192", 
+                                    "type": "string"
+                                }
+                            ], 
+                            "label": "Splunk Server", 
+                            "type": "text"
+                        }, 
+                        {
+                            "required": true, 
+                            "defaultValue": "", 
+                            "encrypted": true, 
+                            "help": "", 
+                            "field": "hec_token", 
+                            "validators": [
+                                {
+                                    "maxLength": 8192, 
+                                    "minLength": 0, 
+                                    "errorMsg": "Max length of password is 8192", 
+                                    "type": "string"
+                                }
+                            ], 
+                            "label": "HEC Token", 
+                            "type": "text"
+                        }
+                    ], 
+                    "title": "Add-on Settings", 
+                    "name": "additional_parameters"
+                }
+            ]
+        }
+    }, 
+    "meta": {
+        "displayName": "Puppet Report Forensics", 
+        "version": "1.0.0", 
+        "restRoot": "TA_puppet_report_forensics", 
+        "name": "TA-puppet-report-forensics", 
+        "apiVersion": "3.0.0"
+    }
+}
