@@ -1,3 +1,3 @@
 
-[build_forensic_report]
+[build_detailed_report]
 

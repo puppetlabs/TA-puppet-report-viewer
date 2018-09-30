@@ -1,89 +1,105 @@
 {
+    "meta": {
+        "name": "TA-puppet-detailed-report-builder", 
+        "restRoot": "TA_puppet_detailed_report_builder", 
+        "version": "1.0.0", 
+        "displayName": "Puppet Detailed Report Builder", 
+        "apiVersion": "3.0.0"
+    }, 
     "pages": {
         "configuration": {
-            "description": "Set up your add-on", 
             "title": "Configuration", 
             "tabs": [
                 {
+                    "name": "additional_parameters", 
                     "entity": [
                         {
-                            "required": true, 
-                            "defaultValue": "", 
-                            "help": "", 
-                            "field": "puppet_enterprise_install", 
                             "validators": [
                                 {
-                                    "maxLength": 8192, 
                                     "minLength": 0, 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "type": "string"
+                                    "type": "string", 
+                                    "maxLength": 8192, 
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
                             ], 
-                            "label": "Puppet Server", 
-                            "type": "text"
+                            "help": "Hostname of Puppet DB Server, usually same as PE Console hostname in simple installation configurations.", 
+                            "field": "puppet_db_server", 
+                            "type": "text", 
+                            "label": "Puppet DB Server", 
+                            "defaultValue": "puppet.company.com", 
+                            "required": true
                         }, 
                         {
-                            "required": true, 
-                            "defaultValue": "", 
                             "encrypted": true, 
+                            "validators": [
+                                {
+                                    "minLength": 0, 
+                                    "type": "string", 
+                                    "maxLength": 8192, 
+                                    "errorMsg": "Max length of password is 8192"
+                                }
+                            ], 
                             "help": "", 
                             "field": "auth_token", 
-                            "validators": [
-                                {
-                                    "maxLength": 8192, 
-                                    "minLength": 0, 
-                                    "errorMsg": "Max length of password is 8192", 
-                                    "type": "string"
-                                }
-                            ], 
-                            "label": "Auth Token", 
-                            "type": "text"
+                            "type": "text", 
+                            "label": "Puppet Auth Token", 
+                            "defaultValue": "", 
+                            "required": true
                         }, 
                         {
-                            "required": true, 
-                            "defaultValue": "", 
-                            "help": "", 
+                            "validators": [
+                                {
+                                    "minLength": 0, 
+                                    "type": "string", 
+                                    "maxLength": 8192, 
+                                    "errorMsg": "Max length of text input is 8192"
+                                }
+                            ], 
+                            "help": "Splunk server / indexer where HEC is located", 
                             "field": "splunk_server", 
-                            "validators": [
-                                {
-                                    "maxLength": 8192, 
-                                    "minLength": 0, 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "type": "string"
-                                }
-                            ], 
+                            "type": "text", 
                             "label": "Splunk Server", 
-                            "type": "text"
+                            "defaultValue": "splunk.company.com", 
+                            "required": true
                         }, 
                         {
-                            "required": true, 
-                            "defaultValue": "", 
                             "encrypted": true, 
+                            "validators": [
+                                {
+                                    "minLength": 0, 
+                                    "type": "string", 
+                                    "maxLength": 8192, 
+                                    "errorMsg": "Max length of password is 8192"
+                                }
+                            ], 
                             "help": "", 
                             "field": "hec_token", 
+                            "type": "text", 
+                            "label": "Splunk HEC Token", 
+                            "defaultValue": "", 
+                            "required": true
+                        }, 
+                        {
                             "validators": [
                                 {
-                                    "maxLength": 8192, 
                                     "minLength": 0, 
-                                    "errorMsg": "Max length of password is 8192", 
-                                    "type": "string"
+                                    "type": "string", 
+                                    "maxLength": 8192, 
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
                             ], 
-                            "label": "HEC Token", 
-                            "type": "text"
+                            "help": "User facing hostname for PE Console, defaults to PuppetDB value if none provided.", 
+                            "field": "pe_console", 
+                            "type": "text", 
+                            "label": "PE Console Hostname", 
+                            "defaultValue": "", 
+                            "required": false
                         }
                     ], 
-                    "title": "Add-on Settings", 
-                    "name": "additional_parameters"
+                    "title": "Add-on Settings"
                 }
-            ]
+            ], 
+            "description": "Set up your add-on"
         }
-    }, 
-    "meta": {
-        "displayName": "Puppet Report Forensics", 
-        "version": "1.0.0", 
-        "restRoot": "TA_puppet_report_forensics", 
-        "name": "TA-puppet-report-forensics", 
-        "apiVersion": "3.0.0"
     }
 }

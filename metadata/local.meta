@@ -1,0 +1,28 @@
+[props/source%3A%3A...build_detailed_report_modalert.log%2A]
+owner = admin
+version = 7.1.3
+modtime = 1538252243.103194000
+
+[passwords/credential%3A__REST_CREDENTIAL__%23TA-puppet-detailed-report-builder%23configs%2Fconf-ta_puppet_detailed_report_builder_settings%3Aadditional_parameters%60%60splunk_cred_sep%60%601%3A]
+owner = admin
+version = 7.1.3
+modtime = 1538252555.139914000
+
+[passwords/credential%3A__REST_CREDENTIAL__%23TA-puppet-detailed-report-builder%23configs%2Fconf-ta_puppet_detailed_report_builder_settings%3Aadditional_parameters%60%60splunk_cred_sep%60%602%3A]
+owner = admin
+version = 7.1.3
+modtime = 1538252555.150263000
+
+[ta_puppet_detailed_report_builder_settings/additional_parameters]
+version = 7.1.3
+modtime = 1538252555.159041000
+
+[props/puppet%3Asummary]
+owner = admin
+version = 7.1.3
+modtime = 1538266612.933280000
+
+[props/puppet%3Adetailed]
+owner = admin
+version = 7.1.3
+modtime = 1538266632.728290000

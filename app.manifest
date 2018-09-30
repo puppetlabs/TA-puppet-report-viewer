@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0.0",
   "info": {
-    "title": "Puppet Report Forensics",
+    "title": "Puppet Detailed Report Builder",
     "id": {
       "group": null,
-      "name": "TA-puppet-report-forensics",
-      "version": "1.0.0"
+      "name": "TA-puppet-detailed-report-builder",
+      "version": "1.2.0"
     },
     "author": [
       {
@@ -15,7 +15,7 @@
       }
     ],
     "releaseDate": null,
-    "description": "",
+    "description": "Adds alert action that builds detailed Puppet run reports from a Puppet summary report. Adds sourcetype for both summary and detailed reports.",
     "classification": {
       "intendedAudience": null,
       "categories": [],
