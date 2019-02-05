@@ -6,16 +6,16 @@ modtime = 1538252243.103194000
 [passwords/credential%3A__REST_CREDENTIAL__%23TA-puppet-detailed-report-builder%23configs%2Fconf-ta_puppet_detailed_report_builder_settings%3Aadditional_parameters%60%60splunk_cred_sep%60%601%3A]
 owner = admin
 version = 7.1.3
-modtime = 1538252555.139914000
+modtime = 1538418247.398145000
 
 [passwords/credential%3A__REST_CREDENTIAL__%23TA-puppet-detailed-report-builder%23configs%2Fconf-ta_puppet_detailed_report_builder_settings%3Aadditional_parameters%60%60splunk_cred_sep%60%602%3A]
 owner = admin
 version = 7.1.3
-modtime = 1538252555.150263000
+modtime = 1538418247.418117000
 
 [ta_puppet_detailed_report_builder_settings/additional_parameters]
 version = 7.1.3
-modtime = 1538252555.159041000
+modtime = 1538418247.424651000
 
 [props/puppet%3Asummary]
 owner = admin
@@ -26,3 +26,27 @@ modtime = 1538266612.933280000
 owner = admin
 version = 7.1.3
 modtime = 1538266632.728290000
+
+[app/ui]
+version = 7.2.3
+modtime = 1548713662.295209000
+
+[app/launcher]
+version = 7.2.3
+modtime = 1548713662.297698000
+
+[app/package/check_for_updates]
+version = 7.2.3
+modtime = 1548713662.298683000
+
+[inputs/http%3A%2F%2FBolt%20Apply%20Data]
+access = read : [ admin ], write : [ admin ]
+export = system
+owner = admin
+version = 7.2.3
+modtime = 1548714461.315121000
+
+[props/bolt%3Aapply]
+owner = admin
+version = 7.2.3
+modtime = 1548714738.769690000

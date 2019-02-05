@@ -9,8 +9,8 @@ import os
 import sys
 import re
 
-ta_name = 'TA-puppet-detailed-report-builder'
-ta_lib_name = 'ta_puppet_detailed_report_builder'
+ta_name = 'TA-puppet-report-viewer'
+ta_lib_name = 'ta_puppet_report_viewer'
 pattern = re.compile(r"[\\/]etc[\\/]apps[\\/][^\\/]+[\\/]bin[\\/]?$")
 new_paths = [path for path in sys.path if not pattern.search(path) or ta_name in path]
 new_paths.insert(0, os.path.sep.join([os.path.dirname(__file__), ta_lib_name]))

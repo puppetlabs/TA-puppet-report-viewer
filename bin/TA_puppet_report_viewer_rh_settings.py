@@ -1,5 +1,5 @@
 
-import ta_puppet_detailed_report_builder_declare
+import ta_puppet_report_viewer_declare
 
 from splunktaucclib.rest_handler.endpoint import (
     field,
@@ -69,7 +69,7 @@ model_additional_parameters = RestModel(fields_additional_parameters, name='addi
 
 
 endpoint = MultipleModel(
-    'ta_puppet_detailed_report_builder_settings',
+    'ta_puppet_report_viewer_settings',
     models=[
         model_additional_parameters
     ],
