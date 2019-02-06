@@ -1,52 +1,54 @@
-[props/source%3A%3A...build_detailed_report_modalert.log%2A]
+[props/puppet%3Abolt]
 owner = admin
-version = 7.1.3
-modtime = 1538252243.103194000
-
-[passwords/credential%3A__REST_CREDENTIAL__%23TA-puppet-detailed-report-builder%23configs%2Fconf-ta_puppet_detailed_report_builder_settings%3Aadditional_parameters%60%60splunk_cred_sep%60%601%3A]
-owner = admin
-version = 7.1.3
-modtime = 1538418247.398145000
-
-[passwords/credential%3A__REST_CREDENTIAL__%23TA-puppet-detailed-report-builder%23configs%2Fconf-ta_puppet_detailed_report_builder_settings%3Aadditional_parameters%60%60splunk_cred_sep%60%602%3A]
-owner = admin
-version = 7.1.3
-modtime = 1538418247.418117000
-
-[ta_puppet_detailed_report_builder_settings/additional_parameters]
-version = 7.1.3
-modtime = 1538418247.424651000
-
-[props/puppet%3Asummary]
-owner = admin
-version = 7.1.3
-modtime = 1538266612.933280000
+version = 7.2.3
+modtime = 1549399107.135857000
 
 [props/puppet%3Adetailed]
 owner = admin
-version = 7.1.3
-modtime = 1538266632.728290000
-
-[app/ui]
 version = 7.2.3
-modtime = 1548713662.295209000
+modtime = 1549399125.172770000
 
-[app/launcher]
+[props/puppet%3Asummary]
+owner = admin
 version = 7.2.3
-modtime = 1548713662.297698000
+modtime = 1549399166.692131000
 
-[app/package/check_for_updates]
+[props/source%3A%3A...generate_detailed_report_modalert.log%2A]
+owner = admin
 version = 7.2.3
-modtime = 1548713662.298683000
+modtime = 1549399980.549403000
 
-[inputs/http%3A%2F%2FBolt%20Apply%20Data]
+[inputs/http%3A%2F%2Fpuppet%3Asummary]
 access = read : [ admin ], write : [ admin ]
 export = system
 owner = admin
 version = 7.2.3
-modtime = 1548714461.315121000
+modtime = 1549400204.830905000
 
-[props/bolt%3Aapply]
+[inputs/http%3A%2F%2Fpuppet%3Adetailed]
+access = read : [ admin ], write : [ admin ]
+export = system
 owner = admin
 version = 7.2.3
-modtime = 1548714738.769690000
+modtime = 1549400260.150508000
+
+[passwords/credential%3A__REST_CREDENTIAL__%23TA-puppet-report-viewer%23configs%2Fconf-ta_puppet_report_viewer_settings%3Aadditional_parameters%60%60splunk_cred_sep%60%601%3A]
+owner = admin
+version = 7.2.3
+modtime = 1549400804.479927000
+
+[passwords/credential%3A__REST_CREDENTIAL__%23TA-puppet-report-viewer%23configs%2Fconf-ta_puppet_report_viewer_settings%3Aadditional_parameters%60%60splunk_cred_sep%60%602%3A]
+owner = admin
+version = 7.2.3
+modtime = 1549400804.532283000
+
+[ta_puppet_report_viewer_settings/additional_parameters]
+version = 7.2.3
+modtime = 1549400804.542491000
+
+[inputs/http%3A%2F%2Fpuppet%3Abolt]
+access = read : [ admin ], write : [ admin ]
+export = system
+owner = admin
+version = 7.2.3
+modtime = 1549400428.847506000

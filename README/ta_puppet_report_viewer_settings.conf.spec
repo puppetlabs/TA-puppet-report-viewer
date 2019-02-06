@@ -2,5 +2,5 @@
 puppet_db_server = 
 auth_token = 
 splunk_server = 
-hec_token = 
+splunk_hec_token = 
 pe_console = 

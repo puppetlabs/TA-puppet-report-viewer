@@ -45,7 +45,7 @@ fields_additional_parameters = [
         )
     ), 
     field.RestField(
-        'hec_token',
+        'splunk_hec_token',
         required=True,
         encrypted=True,
         default='',
