@@ -1,4 +1,9 @@
 <nav search_view="search" color="#65A637">
+<view name="overview" default='true'/>
+<collection label="Reports">
+  <view name="rep001" default="true"/>
+  <view name="rep002" />
+</collection>
 <view name="configuration" default="true"/>
 <view name="search" label="Search"/>
 </nav>

@@ -1,0 +1,19 @@
+<dashboard theme="dark">
+  <label>Services</label>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>sourcetype="puppet:detailed" 
+| stats count(facts.bolt_resource_inventory.services.*.name) as *
+| transpose 0
+| sort +count</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

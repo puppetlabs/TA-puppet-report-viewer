@@ -1,0 +1,22 @@
+<dashboard theme="dark">
+  <label>All Hosts</label>
+  <row>
+    <panel>
+      <table>
+        <title>All reports by last submission time</title>
+        <search>
+          <query>sourcetype="puppet:detailed" 
+| table host, _time 
+| sort by -_time</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="totalsRow">true</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>
