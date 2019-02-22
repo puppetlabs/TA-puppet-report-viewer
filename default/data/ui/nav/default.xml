@@ -1,4 +1,4 @@
-<nav search_view="search" color="#65A637">
+<nav search_view="search" color="#000000">
 <view name="overview" default='true'/>
 <collection label="Reports">
   <view name="rep001" default="true"/>
