@@ -1,9 +1,10 @@
 <nav search_view="search" color="#000000">
-<view name="overview" default='true'/>
+<view name="overview" label="Overview" default='true'/>
 <collection label="Reports">
-  <view name="rep001" default="true"/>
-  <view name="rep002" />
+  <view name="all_reports" Label="All reports" default="true"/>
+  <view name="nodes_with_failures" Label="Nodes with failures" />
+  <view name="nodes_with_corrective_changes" Label="Nodes with corrective changes" />
 </collection>
-<view name="configuration" default="true"/>
+<view name="configuration" label="Configuration" />
 <view name="search" label="Search"/>
 </nav>
