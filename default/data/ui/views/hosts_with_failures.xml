@@ -1,22 +1,25 @@
 <dashboard theme="light">
-  <label>Nodes with corrective changes</label>
+  <label>Hosts with resource failures</label>
   <row>
     <panel>
       <table>
         <search>
-          <query>sourcetype="puppet:detailed"
-| search corrective_change=true
-| eval "certname"=mvdedup('certname'),"corrective_change"=mvdedup('corrective_change')
-| table certname, corrective_change, _time
+          <query>
+          sourcetype="puppet:summary" 
+| search status=failed 
+| dedup 1 certname
+| eval "certname"=mvdedup('certname'), "status"=mvdedup('status')
+| table certname status _time
           </query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
-        <option name="drilldown">row</option>
+        <option name="drilldown">cell</option>
         <option name="percentagesRow">false</option>
-        <option name="totalsRow">false</option>
+        <option name="totalsRow">true</option>
+        <option name="wrap">false</option>
       </table>
     </panel>
   </row>

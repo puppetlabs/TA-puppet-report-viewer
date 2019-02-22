@@ -1,9 +1,8 @@
 <dashboard theme="light">
-  <label>All Hosts</label>
+  <label>All hosts by last submission time</label>
   <row>
     <panel>
       <table>
-        <title>All reports by last submission time</title>
         <search>
           <query>sourcetype="puppet:summary"
 | table host, _time 
