@@ -1,0 +1,73 @@
+<dashboard script="overview.js" theme="light">
+  <label>Facts</label>
+  <row>
+    <panel>
+      <title>Hosts by OS family</title>
+      <chart>
+        <search>
+          <query>sourcetype="puppet:detailed" | top facts.osfamily limit=100</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Free memory by host (avg, last 7d)</title>
+      <chart>
+        <search>
+          <query>sourcetype="puppet:detailed" 
+| chart avg(facts.memoryfree_mb) by host</query>
+          <earliest>-7d@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisLabelsY.majorUnit">1000</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">Free memory in MB</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">preview</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Facts by host</title>
+      <table>
+        <search>
+          <query>sourcetype="puppet:detailed" 
+| dedup 1 certname
+| eval "certname"=mvdedup('certname'),"facts.osfamily"=mvdedup('facts.osfamily'),"facts.uptime"=mvdedup('facts.uptime'),"facts.architecture"=mvdedup('facts.architecture'),"facts.architecture"=mvdedup('facts.architecture'),"facts.networking.ip"=mvdedup('facts.networking.ip'),mytime=strftime(_time,"%Y-%m-%dT%H:%M:%S.%Q")
+| rename "certname" as Node
+| rename "facts.osfamily" as "OS Family"
+| rename "facts.uptime" as "Uptime"
+| rename "facts.architecture" as "Architecture"
+| rename "facts.networking.ip" as "IPv4 address"
+| rename mytime as "Last Updated"
+| table Node "OS Family" Architecture Uptime "IPv4 address" "Last Updated"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

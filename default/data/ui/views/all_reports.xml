@@ -1,11 +1,10 @@
-<dashboard theme="dark">
-  <label>All Hosts</label>
+<dashboard theme="light">
+  <label>All hosts by last submission time</label>
   <row>
     <panel>
       <table>
-        <title>All reports by last submission time</title>
         <search>
-          <query>sourcetype="puppet:detailed" 
+          <query>sourcetype="puppet:summary"
 | table host, _time 
 | sort by -_time</query>
           <earliest>-24h@h</earliest>

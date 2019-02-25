@@ -1,0 +1,26 @@
+<dashboard theme="light">
+  <label>Hosts with resource failures</label>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>
+          sourcetype="puppet:summary" 
+| search status=failed 
+| dedup 1 certname
+| eval "certname"=mvdedup('certname'), "status"=mvdedup('status')
+| table certname status _time
+          </query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="totalsRow">true</option>
+        <option name="wrap">false</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

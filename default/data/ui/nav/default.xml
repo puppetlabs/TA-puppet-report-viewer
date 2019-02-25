@@ -1,9 +1,11 @@
-<nav search_view="search" color="#65A637">
-<view name="overview" default='true'/>
+<nav search_view="search" color="#000000">
+<view name="overview" label="Overview" default='true'/>
+<view name="facts" label="Facts" />
 <collection label="Reports">
-  <view name="rep001" default="true"/>
-  <view name="rep002" />
+  <view name="all_reports" default="true"/>
+  <view name="hosts_with_failures" />
+  <view name="hosts_with_corrective_changes" />
 </collection>
-<view name="configuration" default="true"/>
+<view name="configuration" label="Configuration" />
 <view name="search" label="Search"/>
 </nav>

@@ -1,0 +1,23 @@
+<dashboard theme="light">
+  <label>Hosts with corrective changes</label>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>sourcetype="puppet:detailed"
+| search corrective_change=true
+| eval "certname"=mvdedup('certname'),"corrective_change"=mvdedup('corrective_change')
+| table certname, corrective_change, _time
+          </query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="totalsRow">false</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>
