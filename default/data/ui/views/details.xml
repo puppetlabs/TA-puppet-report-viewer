@@ -1,5 +1,5 @@
 <dashboard script="overview.js" theme="light">
-  <label>Facts</label>
+  <label>Details</label>
   <row>
     <panel>
       <title>Hosts by OS family</title>

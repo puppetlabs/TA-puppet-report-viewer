@@ -1,6 +1,6 @@
 <nav search_view="search" color="#000000">
 <view name="overview" label="Overview" default='true'/>
-<view name="facts" label="Facts" />
+<view name="details" label="Details" />
 <collection label="Reports">
   <view name="all_reports" default="true"/>
   <view name="hosts_with_failures" />
