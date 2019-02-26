@@ -40,6 +40,29 @@
         <option name="refresh.display">preview</option>
       </chart>
     </panel>
+    <panel>
+      <title>Classes in use</title>
+      <table>
+        <search>
+          <query>sourcetype="puppet:detailed"
+| top limit=100 "logs.data{}.source"
+| search "logs.data{}.source"=Class*
+| rename "logs.data{}.source" as "Class"
+| table Class</query>
+          <earliest>-7d@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
   </row>
   <row>
     <panel>
