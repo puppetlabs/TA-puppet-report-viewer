@@ -5,7 +5,8 @@
       <title>Hosts by OS family</title>
       <chart>
         <search>
-          <query>sourcetype="puppet:detailed" | top facts.osfamily limit=100</query>
+          <query>sourcetype="puppet:detailed" 
+| top facts.osfamily limit=100</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
         </search>
@@ -42,19 +43,21 @@
   </row>
   <row>
     <panel>
-      <title>Facts by host</title>
+      <title>Facts by host (from detailed reports, last report shown)</title>
       <table>
         <search>
           <query>sourcetype="puppet:detailed" 
 | dedup 1 certname
-| eval "certname"=mvdedup('certname'),"facts.osfamily"=mvdedup('facts.osfamily'),"facts.uptime"=mvdedup('facts.uptime'),"facts.architecture"=mvdedup('facts.architecture'),"facts.architecture"=mvdedup('facts.architecture'),"facts.networking.ip"=mvdedup('facts.networking.ip'),mytime=strftime(_time,"%Y-%m-%dT%H:%M:%S.%Q")
-| rename "certname" as Node
+| eval "certname"=mvdedup('certname'),"facts.osfamily"=mvdedup('facts.osfamily'),"facts.uptime"=mvdedup('facts.uptime'),"facts.architecture"=mvdedup('facts.architecture'),"facts.architecture"=mvdedup('facts.architecture'),"facts.networking.ip"=mvdedup('facts.networking.ip')
+| eval strf_time=strftime(_time, "%Y-%m-%d %T %:z")
+| rename "certname" as "Host"
 | rename "facts.osfamily" as "OS Family"
 | rename "facts.uptime" as "Uptime"
 | rename "facts.architecture" as "Architecture"
 | rename "facts.networking.ip" as "IPv4 address"
-| rename mytime as "Last Updated"
-| table Node "OS Family" Architecture Uptime "IPv4 address" "Last Updated"</query>
+| rename strf_time as "Report Time"
+| sort -"Report Time"
+| table "Host" "OS Family" "Architecture" "Uptime" "IPv4 address" "Report Time"</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
           <sampleRatio>1</sampleRatio>

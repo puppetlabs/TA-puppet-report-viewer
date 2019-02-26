@@ -1,14 +1,21 @@
 <dashboard theme="light">
-  <label>Hosts with corrective changes</label>
+  <label>Hosts with corrective changes (last 24h)</label>
   <row>
     <panel>
       <table>
         <search>
-          <query>sourcetype="puppet:detailed"
+          <query>sourcetype="puppet:summary"
 | search corrective_change=true
-| eval "certname"=mvdedup('certname'),"corrective_change"=mvdedup('corrective_change')
-| table certname, corrective_change, _time
-          </query>
+| dedup 1 certname
+| eval "certname"=mvdedup('certname'),"corrective_change"=mvdedup('corrective_change'),"run_time"=mvdedup('metrics.time.total')
+| eval strf_time=strftime(_time, "%Y-%m-%d %T %:z")
+| eval run_time_rnd=round(run_time,1)
+| rename certname as "Host"
+| rename corrective_change as "Corrective Change"
+| rename strf_time as "Report Time"
+| rename run_time_rnd as "Execution Time (seconds)"
+| sort -"Report Time"
+| table Host, "Corrective Change", "Report Time", "Execution Time (seconds)"</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
         </search>
@@ -16,6 +23,7 @@
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">row</option>
         <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
         <option name="totalsRow">false</option>
       </table>
     </panel>
