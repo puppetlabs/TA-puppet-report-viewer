@@ -1,0 +1,47 @@
+<dashboard script="overview.js" theme="light">
+  <label>Bolt</label>
+  <row>
+    <panel>
+      <title>All Bolt runs (last 7 days)</title>
+      <chart>
+        <search>
+          <query>sourcetype="puppet:bolt" event_type="bolt_apply"
+| timechart count(_raw)</query>
+          <earliest>-7d@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Runs</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Bolt run details (by last reported time)</title>
+      <table>
+        <search>
+          <query>sourcetype="puppet:bolt" event_type="bolt_apply"
+| eval "certname"=mvdedup('host'), "log"=mvdedup('logs{}.message')
+| eval "strf_time"=strftime(_time, "%Y-%m-%d %T %:z")
+| rename "certname" as "Host"
+| rename "strf_time" as "Report Time"
+| rename "log" as "Log"
+| table Host, "Report Time", "Log"
+| sort - "Report Time"</query>
+          <earliest>-7d@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>
