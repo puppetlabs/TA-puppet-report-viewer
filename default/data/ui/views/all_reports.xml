@@ -1,20 +1,26 @@
 <dashboard theme="light">
-  <label>All hosts by last submission time</label>
+  <label>All summary reports by last submission time</label>
   <row>
     <panel>
       <table>
         <search>
           <query>sourcetype="puppet:summary"
-| table host, _time 
-| sort by -_time</query>
+| eval "certname"=mvdedup('certname'),"run_time"=mvdedup('metrics.time.total')
+| eval strf_time=strftime(_time, "%Y-%m-%d %T %:z")
+| eval run_time_rnd=round(run_time,1)
+| rename certname as "Host"
+| rename strf_time as "Report Time"
+| rename run_time_rnd as "Execution Time (seconds)"
+| sort - "Report Time"
+| table Host, "Report Time", "Execution Time (seconds)"</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
         </search>
-        <option name="count">20</option>
+        <option name="count">40</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">cell</option>
         <option name="percentagesRow">false</option>
-        <option name="totalsRow">true</option>
+        <option name="totalsRow">false</option>
       </table>
     </panel>
   </row>
