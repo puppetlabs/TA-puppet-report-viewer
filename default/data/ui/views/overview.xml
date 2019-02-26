@@ -42,7 +42,7 @@
       <title>All reports</title>
       <single>
         <search>
-          <query>sourcetype="puppet:detailed" | stats count</query>
+          <query>sourcetype="puppet:summary" | stats count</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
           <refresh>30s</refresh>
@@ -65,7 +65,7 @@
       <title>Hosts with corrective changes (last 24h)</title>
       <single>
         <search>
-          <query>sourcetype="puppet:detailed" 
+          <query>sourcetype="puppet:summary" 
 | search corrective_change=true
 | dedup certname 
 | stats count</query>
@@ -126,27 +126,6 @@
         <option name="refresh.display">progressbar</option>
       </chart>
     </panel>
-    <panel>
-      <title>Classes in use</title>
-      <table>
-        <search>
-          <query>sourcetype="puppet:detailed" 
-| top limit=100 "logs.data{}.source"
-| search "logs.data{}.source"=Class*
-| rename "logs.data{}.source" as "Class"
-| table Class</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="count">20</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">row</option>
-        <option name="percentagesRow">false</option>
-        <option name="rowNumbers">false</option>
-        <option name="totalsRow">false</option>
-        <option name="wrap">true</option>
-      </table>
-    </panel>
+
   </row>
 </dashboard>
