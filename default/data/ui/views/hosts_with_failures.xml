@@ -1,0 +1,30 @@
+<dashboard theme="light">
+  <label>Hosts with resource failures (last 24h)</label>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>sourcetype="puppet:summary"
+| search status=failed 
+| dedup 1 certname
+| eval "certname"=mvdedup('certname'),"run_time"=mvdedup('metrics.time.total')
+| eval strf_time=strftime(_time, "%Y-%m-%d %T %:z")
+| eval run_time_rnd=round(run_time,1)
+| rename certname as "Host"
+| rename strf_time as "Report Time"
+| rename run_time_rnd as "Execution Time (seconds)"
+| sort -"Report Time"
+| table Host, "Report Time", "Execution Time (seconds)"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

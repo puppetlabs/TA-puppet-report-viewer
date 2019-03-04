@@ -1,4 +1,12 @@
-<nav search_view="search" color="#65A637">
-<view name="configuration" default="true"/>
+<nav search_view="search" color="#000000">
+<view name="overview" label="Overview" default='true'/>
+<view name="details" label="Details" />
+<view name="bolt" label="Bolt"/>
+<collection label="Reports">
+  <view name="all_reports" default="true"/>
+  <view name="hosts_with_failures" />
+  <view name="hosts_with_corrective_changes" />
+</collection>
+<view name="configuration" label="Configuration" />
 <view name="search" label="Search"/>
 </nav>
