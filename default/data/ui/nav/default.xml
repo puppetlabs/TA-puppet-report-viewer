@@ -3,9 +3,9 @@
 <view name="details" label="Details" />
 <view name="bolt" label="Bolt"/>
 <collection label="Reports">
-  <view name="all_reports" default="true"/>
-  <view name="hosts_with_failures" />
-  <view name="hosts_with_corrective_changes" />
+<view name="all_reports" default="true"/>
+<view name="hosts_with_failures" />
+<view name="hosts_with_corrective_changes" />
 </collection>
 <view name="configuration" label="Configuration" />
 <view name="search" label="Search"/>
