@@ -1,14 +1,23 @@
-<dashboard script="overview.js" theme="light">
+<form script="overview.js" theme="light">
   <label>Bolt</label>
+  <fieldset submitButton="false">
+    <input type="time" token="boltTimeRange" searchWhenChanged="true">
+      <label>Time range:</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
   <row>
     <panel>
-      <title>All Bolt runs (last 7 days)</title>
+      <title>All Bolt runs</title>
       <chart>
         <search>
           <query>sourcetype="puppet:bolt" event_type="bolt_apply"
 | timechart count(_raw)</query>
-          <earliest>-7d@h</earliest>
-          <latest>now</latest>
+          <earliest>$boltTimeRange.earliest$</earliest>
+          <latest>$boltTimeRange.latest$</latest>
         </search>
         <option name="charting.axisTitleX.text">Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -36,12 +45,12 @@
 | rename "log" as "Log"
 | table Host, "Report Time", "Log"
 | sort - "Report Time"</query>
-          <earliest>-7d@h</earliest>
-          <latest>now</latest>
+          <earliest>$boltTimeRange.earliest$</earliest>
+          <latest>$boltTimeRange.latest$</latest>
         </search>
         <option name="drilldown">cell</option>
         <option name="refresh.display">preview</option>
       </table>
     </panel>
   </row>
-</dashboard>
+</form>
