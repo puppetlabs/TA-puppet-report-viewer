@@ -19,7 +19,7 @@
         <option name="charting.chart.showDataLabels">all</option>
         <option name="charting.drilldown">all</option>
         <option name="charting.legend.placement">none</option>
-        <option name="refresh.display">progressbar</option>
+        <option name="refresh.display">preview</option>
       </chart>
     </panel>
   </row>
@@ -40,7 +40,7 @@
           <latest>now</latest>
         </search>
         <option name="drilldown">cell</option>
-        <option name="refresh.display">progressbar</option>
+        <option name="refresh.display">preview</option>
       </table>
     </panel>
   </row>

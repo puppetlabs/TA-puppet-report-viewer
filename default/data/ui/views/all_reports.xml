@@ -1,5 +1,14 @@
-<dashboard theme="light">
+<form theme="light">
   <label>All summary reports by last submission time</label>
+  <fieldset submitButton="false">
+    <input type="time" token="reportTimeRange" searchWhenChanged="true">
+      <label>Time range:</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
   <row>
     <panel>
       <table>
@@ -13,15 +22,16 @@
 | rename run_time_rnd as "Execution Time (seconds)"
 | sort - "Report Time"
 | table Host, "Report Time", "Execution Time (seconds)"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>0</earliest>
+          <latest></latest>
         </search>
-        <option name="count">40</option>
+        <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">cell</option>
         <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
         <option name="totalsRow">false</option>
       </table>
     </panel>
   </row>
-</dashboard>
+</form>

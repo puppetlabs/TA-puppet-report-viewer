@@ -1,5 +1,14 @@
-<dashboard script="overview.js" theme="light">
+<form script="overview.js" theme="light">
   <label>Details</label>
+  <fieldset submitButton="false">
+    <input type="time" token="detailsTimeRange" searchWhenChanged="true">
+      <label>Time range:</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
   <row>
     <panel>
       <title>Hosts by OS family</title>
@@ -7,21 +16,22 @@
         <search>
           <query>sourcetype="puppet:detailed" 
 | top facts.osfamily limit=100</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
         </search>
         <option name="charting.chart">pie</option>
         <option name="charting.drilldown">none</option>
+        <option name="refresh.display">preview</option>
       </chart>
     </panel>
     <panel>
-      <title>Free memory by host (avg, last 7d)</title>
+      <title>Free memory by host (average)</title>
       <chart>
         <search>
           <query>sourcetype="puppet:detailed" 
 | chart avg(facts.memoryfree_mb) by host</query>
-          <earliest>-7d@h</earliest>
-          <latest>now</latest>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
         </search>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisLabelsY.majorUnit">1000</option>
@@ -49,15 +59,15 @@
 | search "logs.data{}.source"=Class*
 | rename "logs.data{}.source" as "Class"
 | table Class</query>
-          <earliest>-7d@h</earliest>
-          <latest>now</latest>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">row</option>
         <option name="percentagesRow">false</option>
-        <option name="refresh.display">progressbar</option>
+        <option name="refresh.display">preview</option>
         <option name="rowNumbers">false</option>
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
@@ -81,19 +91,19 @@
 | rename strf_time as "Report Time"
 | sort -"Report Time"
 | table "Host" "OS Family" "Architecture" "Uptime" "IPv4 address" "Report Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
-        <option name="refresh.display">progressbar</option>
+        <option name="refresh.display">preview</option>
         <option name="rowNumbers">false</option>
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
       </table>
     </panel>
   </row>
-</dashboard>
+</form>

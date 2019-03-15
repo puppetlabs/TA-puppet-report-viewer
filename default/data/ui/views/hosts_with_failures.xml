@@ -1,5 +1,14 @@
-<dashboard theme="light">
-  <label>Hosts with resource failures (last 24h)</label>
+<form theme="light">
+  <label>Hosts with resource failures</label>
+  <fieldset submitButton="false">
+    <input type="time" token="reportTimeRange" searchWhenChanged="true">
+      <label>Time range:</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
   <row>
     <panel>
       <table>
@@ -15,16 +24,17 @@
 | rename run_time_rnd as "Execution Time (seconds)"
 | sort -"Report Time"
 | table Host, "Report Time", "Execution Time (seconds)"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$reportTimeRange.earliest$</earliest>
+          <latest>$reportTimeRange.latest$</latest>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">cell</option>
         <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
         <option name="totalsRow">false</option>
         <option name="wrap">false</option>
       </table>
     </panel>
   </row>
-</dashboard>
+</form>
