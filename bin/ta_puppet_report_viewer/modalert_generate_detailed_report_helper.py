@@ -2,7 +2,7 @@
 # encoding = utf-8
 import json
 import requests
-from dateutil import parser
+from datetime import datetime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -49,9 +49,9 @@ def submit_to_splunk(detailed_report, splunk, hec):
   url = 'https://{}:8088/services/collector'.format(splunk)
   
   # cleanup start_time
-  
-  ptime = parser.parse(detailed_report['start_time'])
-  epoch = ptime.strftime('%s')
+  # start_time = 2019-04-03T12:41:27.481Z
+  utc_time = datetime.strptime(detailed_report['start_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+  epoch = (utc_time - datetime(1970, 1, 1)).total_seconds()
 
   report = {
     'host': detailed_report['certname'],
