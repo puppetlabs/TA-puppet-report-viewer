@@ -1,4 +1,5 @@
 *.pyc
+.vscod*
 local/data/*
 local/passwords.conf
 local/ta_puppet_report_viewer_settings.conf
