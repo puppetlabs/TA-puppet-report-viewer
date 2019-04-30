@@ -51,7 +51,7 @@ def get_resource_events(uuid, server, token):
 
 def submit_to_splunk(detailed_report, splunk, hec):
   # setup the headers
-  headers = {"Authorization" : 'Splunk {} '.format(hec) }
+  headers = {'Authorization' : 'Splunk {} '.format(hec) }
   #setup the url
   url = 'https://{}:8088/services/collector'.format(splunk)
   
@@ -131,24 +131,24 @@ def process_event(helper, *args, **kwargs):
     #helper.log_info(event_dict)
 
     # attempt to parse the event store to see if it's json
-    if is_json(event_dict["_raw"]):
-        event_content = json.loads(event_dict["_raw"])
+    if is_json(event_dict['_raw']):
+        event_content = json.loads(event_dict['_raw'])
         event_uuid = event_content['transaction_uuid']
         event_pe_console = event_content['pe_console']
     else:
         event_uuid = None
         event_pe_console = ""
 
-    uuid = helper.get_param("transaction_uuid") or event_uuid
+    uuid = helper.get_param('transaction_uuid') or event_uuid
 
-    pe_console = helper.get_param("pe_console") or event_pe_console
+    pe_console = helper.get_param('pe_console') or event_pe_console
 
     #helper.log_info('uuid={}'.format(uuid))
 
-    puppet_db_server = helper.get_global_setting("puppet_db_server")
-    auth_token = helper.get_global_setting("auth_token")
-    splunk_server = helper.get_global_setting("splunk_server")
-    hec_token = helper.get_global_setting("splunk_hec_token")
+    puppet_db_server = helper.get_global_setting('puppet_db_server')
+    auth_token = helper.get_global_setting('auth_token')
+    splunk_server = helper.get_global_setting('splunk_server')
+    hec_token = helper.get_global_setting('splunk_hec_token')
 
     resource_response = get_resource_events(uuid, puppet_db_server, auth_token)
 
@@ -163,10 +163,10 @@ def process_event(helper, *args, **kwargs):
 
     detailed_report['url'] = 'https://{}/#/inspect/report/{}/events'.format(pe_console, detailed_report["hash"])
 
-    detailed_report["pe_console"] = pe_console
+    detailed_report['pe_console'] = pe_console
 
     submit_to_splunk(detailed_report, splunk_server, hec_token)
 
-    helper.writeevents(host="localhost", source="localhost")
+    helper.writeevents(host='localhost', source='localhost')
 
     return 0
