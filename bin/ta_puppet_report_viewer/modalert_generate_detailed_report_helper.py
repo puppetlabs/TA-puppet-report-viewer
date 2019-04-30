@@ -1,32 +1,11 @@
-
 # encoding = utf-8
 import json
 import requests
-from dateutil import parser
+import collections
+from datetime import datetime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
-
-def get_certname_facts(certname, server, token):
-  # setup the headers
-  headers = {'X-Authentication': token}
-  #setup the url
-  url = 'https://{}:8081/pdb/query/v4'.format(server)
-
-  facts = {}
-  query_string = {}
-  query_string['query'] = "facts [name, value] { certname = \"%s\"}" % certname
-  
-  certname_facts = json.loads(requests.post(url, json=query_string, headers=headers, verify=False).text)
-
-  facts['facts'] = {}
-
-  for f in certname_facts:
-    facts['facts'][f['name']] = f['value']
-
-  return facts
-
 
 def get_resource_events(uuid, server, token):
   
@@ -35,8 +14,36 @@ def get_resource_events(uuid, server, token):
   #setup the url
   url = 'https://{}:8081/pdb/query/v4'.format(server)
 
+  report_elements = [
+    'hash', 
+    'status', 
+    'puppet_version', 
+    'report_format', 
+    'catalog_uuid', 
+    'job_id', 
+    'cached_catalog_status', 
+    'configuration_version', 
+    'environment', 
+    'corrective_change', 
+    'noop', 
+    'noop_pending', 
+    'certname', 
+    'transaction_uuid', 
+    'code_id', 
+    'resource_events', 
+    'producer_timestamp', 
+    'producer', 
+    'start_time', 
+    'end_time', 
+    'receive_time', 
+    'logs', 
+    'metrics'
+  ]
+
+  joined_elements = ', '.join(report_elements)
+
   query_string = {}
-  query_string['query'] = "reports[hash, status, puppet_version, report_format, catalog_uuid, job_id, cached_catalog_status, configuration_version, environment, corrective_change, noop, noop_pending, certname, transaction_uuid, code_id, resource_events, producer_timestamp, producer, start_time, end_time, receive_time, logs] { transaction_uuid = \"%s\" }" % uuid
+  query_string['query'] = 'reports[{}] {{ transaction_uuid = "{}" }}'.format(joined_elements, uuid)
   
   resource_events = json.loads(requests.post(url, json=query_string, headers=headers, verify=False).text)
 
@@ -44,18 +51,19 @@ def get_resource_events(uuid, server, token):
 
 def submit_to_splunk(detailed_report, splunk, hec):
   # setup the headers
-  headers = {"Authorization" : 'Splunk {} '.format(hec) }
+  headers = {'Authorization' : 'Splunk {} '.format(hec) }
   #setup the url
   url = 'https://{}:8088/services/collector'.format(splunk)
   
   # cleanup start_time
-  
-  ptime = parser.parse(detailed_report['start_time'])
-  epoch = ptime.strftime('%s')
+  # start_time = 2019-04-03T12:41:27.481Z
+  utc_time = datetime.strptime(detailed_report['start_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+  epoch = (utc_time - datetime(1970, 1, 1)).total_seconds()
 
   report = {
     'host': detailed_report['certname'],
     'time': epoch,
+    'sourcetype': 'puppet:detailed',
     'event': detailed_report
   }
 
@@ -123,44 +131,42 @@ def process_event(helper, *args, **kwargs):
     #helper.log_info(event_dict)
 
     # attempt to parse the event store to see if it's json
-    if is_json(event_dict["_raw"]):
-        event_content = json.loads(event_dict["_raw"])
+    if is_json(event_dict['_raw']):
+        event_content = json.loads(event_dict['_raw'])
         event_uuid = event_content['transaction_uuid']
-        event_puppetdb_callback_hostname = event_content['puppetdb_callback_hostname']
+        event_pe_console = event_content['pe_console']
     else:
         event_uuid = None
-        event_puppetdb_callback_hostname = ""
+        event_pe_console = ""
 
-    uuid = helper.get_param("transaction_uuid") or event_uuid
+    uuid = helper.get_param('transaction_uuid') or event_uuid
 
-    puppetdb_callback_hostname = helper.get_param("puppetdb_callback_hostname") or event_puppetdb_callback_hostname
+    pe_console = helper.get_param('pe_console') or event_pe_console
 
     #helper.log_info('uuid={}'.format(uuid))
 
-    puppet_db_server = helper.get_global_setting("puppet_db_server")
-    auth_token = helper.get_global_setting("auth_token")
-    splunk_server = helper.get_global_setting("splunk_server")
-    hec_token = helper.get_global_setting("splunk_hec_token")
-
-
-    pe_console = helper.get_global_setting("pe_console") or puppet_db_server
+    puppet_db_server = helper.get_global_setting('puppet_db_server')
+    auth_token = helper.get_global_setting('auth_token')
+    splunk_server = helper.get_global_setting('splunk_server')
+    hec_token = helper.get_global_setting('splunk_hec_token')
 
     resource_response = get_resource_events(uuid, puppet_db_server, auth_token)
 
     detailed_report = resource_response[0]
-    
-    certname = detailed_report['certname']
-    
-    facts= get_certname_facts(certname, puppet_db_server, auth_token)
 
-    detailed_report['facts'] = facts['facts']
+    mdict = collections.defaultdict(dict)
+
+    for m in detailed_report['metrics']['data']:
+      mdict[m['category']][m['name']] = m['value']
+    
+    detailed_report['metrics'] = dict(mdict)
 
     detailed_report['url'] = 'https://{}/#/inspect/report/{}/events'.format(pe_console, detailed_report["hash"])
 
-    detailed_report["puppetdb_callback_hostname"] = puppetdb_callback_hostname
+    detailed_report['pe_console'] = pe_console
 
     submit_to_splunk(detailed_report, splunk_server, hec_token)
 
-    helper.writeevents(host="localhost", source="localhost")
+    helper.writeevents(host='localhost', source='localhost')
 
     return 0
