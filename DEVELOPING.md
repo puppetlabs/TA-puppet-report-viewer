@@ -22,7 +22,7 @@ To add your finished work back to the repo:
 
 ```
 $ cd tmpdir
-$ tar xzvf TA-puppet-tasks-actionable_2_0_1_export.tgz
+$ tar xzvf TA-puppet-report-viewer_2_0_1_export.tgz
 $ cd ..
-$ rsync -vr tmpdir/TA-puppet-tasks-actionable_2_0_1_export/* ./
+$ rsync -vr tmpdir/TA-puppet-report-viewer_2_0_1_export/* ./
 ```

@@ -1,0 +1,110 @@
+<form>
+  <label>Report Builder</label>
+  <description>This dashboard shows you have to filter for reports based on inventory data and report status, use this to generate searches you can save in other reports or dashboards as you see fit</description>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="reportsTime" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="pe_console" searchWhenChanged="true">
+      <label>Puppet Install</label>
+      <choice value="*">All</choice>
+      <prefix>pe_console="</prefix>
+      <suffix>"</suffix>
+      <fieldForLabel>pe_console</fieldForLabel>
+      <fieldForValue>pe_console</fieldForValue>
+      <search>
+        <query>sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
+        <earliest>$reportsTime.earliest$</earliest>
+        <latest>$reportsTime.latest$</latest>
+      </search>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="dropdown" token="factname" searchWhenChanged="true">
+      <label>Fact Name</label>
+      <fieldForLabel>field</fieldForLabel>
+      <fieldForValue>field</fieldForValue>
+      <search>
+        <query>sourcetype="puppet:facts" $pe_console$ | fieldsummary | fields field</query>
+        <earliest>$reportsTime.earliest$</earliest>
+        <latest>$reportsTime.latest$</latest>
+      </search>
+      <default>os.family</default>
+    </input>
+    <input type="dropdown" token="factvalue" searchWhenChanged="true">
+      <label>Fact Value</label>
+      <choice value="*">Any</choice>
+      <default>*</default>
+      <fieldForLabel>$factname$</fieldForLabel>
+      <fieldForValue>$factname$</fieldForValue>
+      <search>
+        <query>sourcetype="puppet:facts" $pe_console$ | dedup $factname$ | table $factname$</query>
+        <earliest>$reportsTime.earliest$</earliest>
+        <latest>$reportsTime.latest$</latest>
+      </search>
+    </input>
+    <input type="multiselect" token="reportstatus" searchWhenChanged="true">
+      <label>Report Status</label>
+      <delimiter> OR </delimiter>
+      <choice value="unchanged">Unchanged</choice>
+      <choice value="changed">Changed</choice>
+      <choice value="failed">Failed</choice>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <valuePrefix>status="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+    </input>
+    <input type="link" token="corrective_changes" searchWhenChanged="true">
+      <label>Only Show Remediations</label>
+      <choice value="true">Yes</choice>
+      <choice value="*">No</choice>
+      <default>*</default>
+      <prefix>corrective_change="</prefix>
+      <suffix>"</suffix>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>sourcetype=puppet:summary 
+[ search sourcetype="puppet:facts" $pe_console$ $factname$=$factvalue$ | dedup host | table host ]
+| search $reportstatus$ AND $corrective_changes$ 
+| rename status as "Status"
+| rename transaction_uuid as "UUID"
+| rename host as "Host"
+| eval "Time"=strftime(_time, "%Y-%m-%d %T %:z")
+| table "Host" "Time" "Status" "UUID"
+| sort - "Time"</query>
+          <earliest>$reportsTime.earliest$</earliest>
+          <latest>$reportsTime.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="refresh.display">preview</option>
+        <drilldown>
+          <set token="report_id">$row.UUID$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table depends="$report_id$">
+        <search>
+          <query>sourcetype=puppet:* transaction_uuid=$report_id$</query>
+          <earliest>$reportsTime.earliest$</earliest>
+          <latest>$reportsTime.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>
