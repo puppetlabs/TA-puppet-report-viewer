@@ -1,0 +1,148 @@
+<form>
+  <label>Inventory trends</label>
+  <description>This is an example dashboard that lets you filter your inventory by fact name and value (such as OS Family = RedHat) before selecting a fact (such as os version) you'd want to see over time.</description>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="trendTime">
+      <label>Time Range</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="pe_console" searchWhenChanged="true">
+      <label>Puppet Install</label>
+      <choice value="*">All</choice>
+      <prefix>pe_console="</prefix>
+      <suffix>"</suffix>
+      <fieldForLabel>pe_console</fieldForLabel>
+      <fieldForValue>pe_console</fieldForValue>
+      <search>
+        <query>sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
+        <earliest>$trendTime.earliest$</earliest>
+        <latest>$trendTime.latest$</latest>
+      </search>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="dropdown" token="factname" searchWhenChanged="true">
+      <label>Fact Name</label>
+      <fieldForLabel>field</fieldForLabel>
+      <fieldForValue>field</fieldForValue>
+      <search>
+        <query>sourcetype="puppet:facts" $pe_console$ | fieldsummary | fields field</query>
+        <earliest>$trendTime.earliest$</earliest>
+        <latest>$trendTime.latest$</latest>
+      </search>
+      <default>os.family</default>
+    </input>
+    <input type="dropdown" token="factvalue" searchWhenChanged="true">
+      <label>Fact Value</label>
+      <default>*</default>
+      <fieldForLabel>$factname$</fieldForLabel>
+      <fieldForValue>$factname$</fieldForValue>
+      <search>
+        <query>sourcetype="puppet:facts" $pe_console$ | dedup $factname$ | table $factname$</query>
+        <earliest>$trendTime.earliest$</earliest>
+        <latest>$trendTime.latest$</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="trendingfact" searchWhenChanged="true">
+      <fieldForLabel>field</fieldForLabel>
+      <fieldForValue>field</fieldForValue>
+      <search>
+        <query>sourcetype="puppet:facts" $pe_console$ $factname$=$factvalue$ | fieldsummary | fields field</query>
+        <earliest>$trendTime.earliest$</earliest>
+        <latest>$trendTime.latest$</latest>
+      </search>
+      <default>puppetversion</default>
+    </input>
+    <input type="text" token="timewindow" searchWhenChanged="true">
+      <label>Time Span</label>
+      <default>1d</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <title>Trending of fact $trendingfact$ for hosts where $factname$ = $factvalue$</title>
+        <search>
+          <query>sourcetype="puppet:facts"
+| search $factname$=$factvalue$ $pe_console$
+| rename "trusted.certname" as "Host"
+| bin span=$timewindow$ _time
+| dedup _time,host
+| timechart span=$timewindow$ count($trendingfact$) by $trendingfact$ |addtotals row=true fieldname=_Total|foreach * [eval &lt;&lt;FIELD&gt;&gt; = '&lt;&lt;FIELD&gt;&gt;' * 100 / _Total]</query>
+          <earliest>$trendTime.earliest$</earliest>
+          <latest>$trendTime.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisLabelsY.majorUnit">25</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Percentage of Fleet</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked100</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="height">339</option>
+        <option name="refresh.display">preview</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <set token="trendingfactvalue">$click.name2$</set>
+          <set token="chart_earliest">$earliest$</set>
+          <set token="chart_latest">$latest$</set>
+          <eval token="human_earliest">strftime($earliest$, "%Y-%m-%d %T %z")</eval>
+          <eval token="human_latest">strftime($latest$, "%Y-%m-%d %T %z")</eval>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table depends="$trendingfactvalue$">
+        <title>Hosts with fact $trendingfact$ matching $trendingfactvalue$ between $human_earliest$ and $human_latest$</title>
+        <search>
+          <query>sourcetype="puppet:facts"
+| search $factname$=$factvalue$ AND $pe_console$ AND $trendingfact$=$trendingfactvalue$
+| eval "Timestamp"=strftime(_time, "%Y-%m-%d %T %:z")
+| bin span=$timewindow$ _time
+| dedup _time,host
+| rename host as "Host"
+| rename transaction_uuid as "Run ID" 
+| table "Host" "Timestamp" $factname$ $trendingfact$ "Run ID"</query>
+          <earliest>$chart_earliest$</earliest>
+          <latest>$chart_latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+      </table>
+    </panel>
+  </row>
+</form>

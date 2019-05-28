@@ -1,0 +1,160 @@
+<form script="overview.js" theme="light" hidefilters="true">
+  <label>Inventory</label>
+  <fieldset submitButton="false">
+    <input type="time" token="detailsTimeRange" searchWhenChanged="true">
+      <label>Time range:</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="pe_console" searchWhenChanged="true">
+      <label>Puppet Install</label>
+      <choice value="*">All</choice>
+      <prefix>pe_console="</prefix>
+      <suffix>"</suffix>
+      <fieldForLabel>pe_console</fieldForLabel>
+      <fieldForValue>pe_console</fieldForValue>
+      <search>
+        <query>sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Hosts by OS family</title>
+      <chart>
+        <search>
+          <query>sourcetype="puppet:facts" $pe_console$ | dedup host | top 10 os.name</query>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">preview</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Memory usage by percentage</title>
+      <table>
+        <search>
+          <query>sourcetype="puppet:facts" $pe_console$ | convert rmunit(memory.system.capacity) |dedup host | rename networking.hostname as "Host" | rename memory.system.capacity as "Memory Used" | table "Host" "Memory Used" | sort - "Memory Used"</query>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">preview</option>
+        <option name="rowNumbers">true</option>
+        <drilldown>
+          <set token="title1">$row.Host$</set>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>System load average</title>
+      <table>
+        <search>
+          <query>sourcetype="puppet:facts" $pe_console$ | stats avg(load_averages.15m) by networking.hostname | eval avg(load_averages.15m)=round('avg(load_averages.15m)',2) | table networking.hostname avg(load_averages.15m) | rename avg(load_averages.15m) as "Load Average" | rename "networking.hostname" as "Host" | sort - "Load Average"</query>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">preview</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <drilldown>
+          <set token="title2">$row.Host$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart depends="$title1$">
+        <title>Memory usage on $title1$ over 24 Hours</title>
+        <search>
+          <query>sourcetype="puppet:facts" networking.hostname=$title1$ $pe_console$| convert rmunit(memory.system.capacity) | stats avg(memory.system.capacity) by _time | rename "avg(memory.system.capacity)" as "Avg Memory" | predict "Avg Memory"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart depends="$title2$">
+        <title>System load average on $title2$ over 24 Hours</title>
+        <search>
+          <query>sourcetype="puppet:facts" networking.hostname=$title2$ $pe_console$ | stats avg(load_averages.15m) by _time | eval avg(load_averages.15m)=round('avg(load_averages.15m)',2) | rename avg(load_averages.15m) as LoadAvg15 | predict LoadAvg15</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Facts by host (from detailed reports, last report shown)</title>
+      <input type="text" token="value" searchWhenChanged="true">
+        <label>Fact Name</label>
+        <default>os.family</default>
+        <initialValue>*</initialValue>
+        <suffix>="</suffix>
+      </input>
+      <input type="text" searchWhenChanged="true" token="facts">
+        <label>Fact Value</label>
+        <default>*</default>
+        <prefix>$value$</prefix>
+        <suffix>"</suffix>
+        <initialValue>*</initialValue>
+      </input>
+      <table>
+        <search>
+          <query>sourcetype="puppet:facts" $facts$ $pe_console$
+| dedup 1 trusted.certname 
+| eval strf_time=strftime(_time, "%Y-%m-%d %T %:z")
+| rename "trusted.certname" as "Host"
+| rename "os.name" as "OS"
+| rename "os.family" as "OS Family"
+| rename "system_uptime.uptime" as "Uptime"
+| rename "os.architecture" as "Architecture"
+| rename "networking.ip" as "IPv4 address"
+| rename environment as "Environment"
+| rename pe_console as "Puppet Install"
+| rename os.release.full as "OS Version"
+| rename strf_time as "Last Checkin"
+| rename puppetversion as "Puppet Version"
+| sort - "Last Checkin"
+| table "Host" "OS" "OS Version" "OS Family" "Architecture" "Uptime" "IPv4 address" "Environment" "Puppet Version" "Puppet Install" "Last Checkin"</query>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">preview</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

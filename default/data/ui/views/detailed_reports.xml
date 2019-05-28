@@ -1,11 +1,11 @@
 <form theme="light">
-  <label>Summary reports</label>
+  <label>Detailed reports</label>
   <fieldset submitButton="false">
-    <input type="time" token="reportTimeRange" searchWhenChanged="true">
+    <input type="time" token="detailedreportTimeRange" searchWhenChanged="true">
       <label>Time range:</label>
       <default>
-        <earliest>-7d@h</earliest>
-        <latest>now</latest>
+      <earliest>rt-1h</earliest>
+      <latest>rt</latest>
       </default>
     </input>
     <input type="multiselect" token="field1" searchWhenChanged="true">
@@ -15,8 +15,8 @@
       <search>
         <query>sourcetype="puppet:facts"
 | top os.family limit=100</query>
-        <earliest>$reportTimeRange.earliest$</earliest>
-        <latest>$reportTimeRange.latest$</latest>
+        <earliest>$detailedreportTimeRange.earliest$</earliest>
+        <latest>$detailedreportTimeRange.latest$</latest>
       </search>
     </input>
     <input type="multiselect" token="field2" searchWhenChanged="true">
@@ -26,8 +26,8 @@
       <search>
         <query>sourcetype="puppet:facts"
 | top environment limit=100</query>
-        <earliest>$reportTimeRange.earliest$</earliest>
-        <latest>$reportTimeRange.latest$</latest>
+        <earliest>$detailedreportTimeRange.earliest$</earliest>
+        <latest>$detailedreportTimeRange.latest$</latest>
       </search>
     </input>
     <input type="multiselect" token="field3" searchWhenChanged="true">
@@ -37,8 +37,8 @@
       <search>
         <query>sourcetype="puppet:facts"
 | top networking.domain limit=100</query>
-        <earliest>$reportTimeRange.earliest$</earliest>
-        <latest>$reportTimeRange.latest$</latest>
+        <earliest>$detailedreportTimeRange.earliest$</earliest>
+        <latest>$detailedreportTimeRange.latest$</latest>
       </search>
     </input>
   </fieldset>
@@ -46,17 +46,25 @@
     <panel>
       <table>
         <search>
-          <query>sourcetype="puppet:summary"
+          <query>sourcetype="puppet:detailed"
 | eval "certname"=mvdedup('certname'),"run_time"=mvdedup('metrics.time.total')
 | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z")
 | eval run_time_rnd=round(run_time,1)
+| eval failures=mvdedup('metrics.resources.failed')
+| eval changes=mvdedup('metrics.resources.changed')
+| eval corrective_change=mvdedup('metrics.resources.corrective_change')
+| eval status=mvdedup('status')
 | rename certname as "Host"
 | rename strf_time as "Report Time"
 | rename run_time_rnd as "Execution Time (seconds)"
+| rename failures as "Failures"
+| rename changes as "Changes"
+| rename corrective_change as "Remediations"
+| rename status as "Status"
 | sort - "Report Time"
-| table Host, "Report Time", "Execution Time (seconds)"</query>
-          <earliest>$reportTimeRange.earliest$</earliest>
-          <latest>$reportTimeRange.latest$</latest>
+| table Host, "Status", "Failures", "Remediations", "Changes", "Report Time", "Execution Time (seconds)"</query>
+          <earliest>$detailedreportTimeRange.earliest$</earliest>
+          <latest>$detailedreportTimeRange.latest$</latest>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
