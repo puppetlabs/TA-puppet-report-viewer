@@ -13,7 +13,7 @@
     <panel>
       <table>
         <search>
-          <query>sourcetype="puppet:summary"
+          <query>`puppet_summary_index` sourcetype="puppet:summary"
 | search corrective_change=true
 | dedup 1 certname
 | eval "certname"=mvdedup('certname'),"corrective_change"=mvdedup('corrective_change'),"run_time"=mvdedup('metrics.time.total')

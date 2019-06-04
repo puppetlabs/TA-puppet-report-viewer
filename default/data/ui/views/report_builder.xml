@@ -17,7 +17,7 @@
       <fieldForLabel>pe_console</fieldForLabel>
       <fieldForValue>pe_console</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
         <earliest>$reportsTime.earliest$</earliest>
         <latest>$reportsTime.latest$</latest>
       </search>
@@ -29,7 +29,7 @@
       <fieldForLabel>field</fieldForLabel>
       <fieldForValue>field</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" $pe_console$ | fieldsummary | fields field</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | fieldsummary | fields field</query>
         <earliest>$reportsTime.earliest$</earliest>
         <latest>$reportsTime.latest$</latest>
       </search>
@@ -42,7 +42,7 @@
       <fieldForLabel>$factname$</fieldForLabel>
       <fieldForValue>$factname$</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" $pe_console$ | dedup $factname$ | table $factname$</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | dedup $factname$ | table $factname$</query>
         <earliest>$reportsTime.earliest$</earliest>
         <latest>$reportsTime.latest$</latest>
       </search>
@@ -70,16 +70,17 @@
   </fieldset>
   <row>
     <panel>
+      <title>Summary Reports</title>
       <table>
         <search>
-          <query>sourcetype=puppet:summary 
-[ search sourcetype="puppet:facts" $pe_console$ $factname$=$factvalue$ | dedup host | table host ]
+          <query>`puppet_summary_index` sourcetype=puppet:summary 
+[ search `puppet_facts_index` sourcetype="puppet:facts" $pe_console$ $factname$=$factvalue$ | dedup host | table host ]
 | search $reportstatus$ AND $corrective_changes$ 
 | rename status as "Status"
-| rename transaction_uuid as "UUID"
+| rename transaction_uuid as "Run ID"
 | rename host as "Host"
 | eval "Time"=strftime(_time, "%Y-%m-%d %T %:z")
-| table "Host" "Time" "Status" "UUID"
+| table "Host" "Time" "Status" "Run ID"
 | sort - "Time"</query>
           <earliest>$reportsTime.earliest$</earliest>
           <latest>$reportsTime.latest$</latest>
@@ -88,22 +89,41 @@
         <option name="count">10</option>
         <option name="refresh.display">preview</option>
         <drilldown>
-          <set token="report_id">$row.UUID$</set>
+          <set token="report_id">$row.Run ID$</set>
         </drilldown>
       </table>
     </panel>
   </row>
   <row>
     <panel>
+      <title>All events associated with Run ID</title>
       <table depends="$report_id$">
         <search>
-          <query>sourcetype=puppet:* transaction_uuid=$report_id$</query>
+          <query>`puppet_summary_index` sourcetype=puppet:* transaction_uuid=$report_id$
+| rename sourcetype as "Source"
+| rename host as "Host"
+| eval "Time"=strftime(_time, "%Y-%m-%d %T %:z")
+| eval "stringurl"=url
+| rename transaction_uuid as "Run ID" 
+| rename url as "Puppet Enterprise Report"
+| table "Source" "Host" "Time" "Run ID" "Puppet Enterprise Report"</query>
           <earliest>$reportsTime.earliest$</earliest>
           <latest>$reportsTime.latest$</latest>
         </search>
         <option name="count">10</option>
-        <option name="drilldown">none</option>
+        <option name="drilldown">cell</option>
         <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <condition field="Source"></condition>
+          <condition field="Host"></condition>
+          <condition field="Time"></condition>
+          <condition field="Run ID">
+            <link target="_blank">/app/TA-puppet-report-viewer/search?q=%60puppet_run_index%60%20transaction_uuid%3D$row.Run ID$</link>
+          </condition>
+          <condition field="Puppet Enterprise Report">
+            <link target="_blank">$row.Puppet Enterprise Report|n$</link>
+          </condition>
+        </drilldown>
       </table>
     </panel>
   </row>

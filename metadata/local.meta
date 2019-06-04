@@ -66,8 +66,8 @@ modtime = 1555630964.782190000
 access = read : [ * ], write : [ admin ]
 export = none
 owner = admin
-version = 7.2.3
-modtime = 1555634515.954511000
+version = 7.2.6
+modtime = 1559675386.876068000
 
 [views/inventory]
 version = 7.2.3

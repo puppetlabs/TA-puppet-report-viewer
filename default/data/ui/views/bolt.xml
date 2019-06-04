@@ -14,7 +14,7 @@
       <title>All Bolt runs</title>
       <chart>
         <search>
-          <query>sourcetype="puppet:bolt" event_type="bolt_apply"
+          <query>`puppet_bolt_index` sourcetype="puppet:bolt" event_type="bolt_apply"
 | timechart count(_raw)</query>
           <earliest>$boltTimeRange.earliest$</earliest>
           <latest>$boltTimeRange.latest$</latest>
@@ -37,7 +37,7 @@
       <title>Bolt run details (by last reported time)</title>
       <table>
         <search>
-          <query>sourcetype="puppet:bolt" event_type="bolt_apply"
+          <query>`puppet_bolt_index` sourcetype="puppet:bolt" event_type="bolt_apply"
 | eval "certname"=mvdedup('host'), "log"=mvdedup('logs{}.message')
 | eval "strf_time"=strftime(_time, "%Y-%m-%d %T %:z")
 | rename "certname" as "Host"
