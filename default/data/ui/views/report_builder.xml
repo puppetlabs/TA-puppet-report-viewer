@@ -99,7 +99,7 @@
       <title>All events associated with Run ID</title>
       <table depends="$report_id$">
         <search>
-          <query>`puppet_summary_index` sourcetype=puppet:* transaction_uuid=$report_id$
+          <query>`puppet_run_index` sourcetype=puppet:* transaction_uuid=$report_id$
 | rename sourcetype as "Source"
 | rename host as "Host"
 | eval "Time"=strftime(_time, "%Y-%m-%d %T %:z")
