@@ -19,7 +19,7 @@
       <fieldForLabel>pe_console</fieldForLabel>
       <fieldForValue>pe_console</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
         <earliest>-24h@h</earliest>
         <latest>now</latest>
       </search>
@@ -33,7 +33,7 @@
         </html>
       <single>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | stats count by host 
 | stats count</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
@@ -72,7 +72,7 @@
         </html>
       <single>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | search corrective_change=true
 | dedup certname 
 | stats count(corrective_change) by _time</query>
@@ -105,7 +105,7 @@
         </html>
       <single>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | search status=failed
 | dedup certname 
 | stats count(status) by _time</query>
@@ -130,7 +130,7 @@
     <panel depends="$title2$">
       <table>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | search corrective_change=true
 | dedup certname 
 | stats count(corrective_change) by host | rename count(corrective_change) as "Corrective Changes" host as Host</query>
@@ -148,7 +148,7 @@
       <table>
         <title>Host with Failures</title>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | search status=failed 
 | dedup 1 certname
 | eval "certname"=mvdedup('certname'),"run_time"=mvdedup('metrics.time.total')
@@ -172,7 +172,7 @@
     <panel>
       <table depends="$title1$">
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$ |dedup host | stats sparkline  avg(metrics.time.catalog_application) as Application avg(metrics.time.config_retrieval) as Retrieval avg(metrics.time.fact_generation) as Generation avg(metrics.time.total) as Total by host  | table host sparkline Application Retrieval Generation Total</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ |dedup host | stats sparkline  avg(metrics.time.catalog_application) as Application avg(metrics.time.config_retrieval) as Retrieval avg(metrics.time.fact_generation) as Generation avg(metrics.time.total) as Total by host  | table host sparkline Application Retrieval Generation Total</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
@@ -186,7 +186,7 @@
     <panel>
       <chart>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$ host != producer | timechart span=30m avg(metrics.time.catalog_application) AS Catalog avg(metrics.time.config_retrieval) as Retrieval avg(metrics.time.fact_generation) as Generation avg(metrics.time.total) as Total | predict Total</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ host != producer | timechart span=30m avg(metrics.time.catalog_application) AS Catalog avg(metrics.time.config_retrieval) as Retrieval avg(metrics.time.fact_generation) as Generation avg(metrics.time.total) as Total | predict Total</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
@@ -213,7 +213,7 @@
         </html>
       <single>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$ | stats count(metrics.changes.total)</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ | stats count(metrics.changes.total)</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
@@ -236,7 +236,7 @@
         </html>
       <single>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$ | stats count</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ | stats count</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
@@ -259,7 +259,7 @@
         </html>
       <single>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$ | stats avg("metrics.time.total") | rename host as "Host" avg(metrics.time.total) as "Total Time"</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ | stats avg("metrics.time.total") | rename host as "Host" avg(metrics.time.total) as "Total Time"</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
@@ -278,7 +278,7 @@
       <table depends="$title4$">
         <title>Average Compilation Times</title>
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$ | stats avg("metrics.time.total") latest(time) by host | rename host as "Host" avg(metrics.time.total) as "Total Time" latest(time) as "Report Time"  | table "Host" "Total Time" "Report Time"</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ | stats avg("metrics.time.total") latest(time) by host | rename host as "Host" avg(metrics.time.total) as "Total Time" latest(time) as "Report Time"  | table "Host" "Total Time" "Report Time"</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
         </search>
@@ -295,7 +295,7 @@
       <table depends="$title5$">
         <title></title>
         <search>
-          <query>sourcetype="puppet:summary" pe_console="*" | stats count(metrics.changes.total) by host | rename host as Host count(metrics.changes.total) as Total</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | stats count(metrics.changes.total) by host | rename host as Host count(metrics.changes.total) as Total</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
@@ -307,7 +307,7 @@
     <panel>
       <table depends="$title6$">
         <search>
-          <query>sourcetype="puppet:summary" $pe_console$ | table host status time transaction_uuid</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ | table host status time transaction_uuid</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>

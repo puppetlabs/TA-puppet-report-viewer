@@ -14,7 +14,7 @@
       <title>Hosts by OS family</title>
       <chart>
         <search>
-          <query>sourcetype="puppet:detailed" 
+          <query>`puppet_detailed_index` sourcetype="puppet:detailed" 
 | top facts.osfamily limit=100</query>
           <earliest>$detailsTimeRange.earliest$</earliest>
           <latest>$detailsTimeRange.latest$</latest>
@@ -28,7 +28,7 @@
       <title>Free memory by host (average)</title>
       <chart>
         <search>
-          <query>sourcetype="puppet:detailed" 
+          <query>`puppet_detailed_index` sourcetype="puppet:detailed" 
 | chart avg(facts.memoryfree_mb) by host</query>
           <earliest>$detailsTimeRange.earliest$</earliest>
           <latest>$detailsTimeRange.latest$</latest>
@@ -54,7 +54,7 @@
       <title>Classes in use</title>
       <table>
         <search>
-          <query>sourcetype="puppet:detailed"
+          <query>`puppet_detailed_index` sourcetype="puppet:detailed"
 | top limit=100 "logs.data{}.source"
 | search "logs.data{}.source"=Class*
 | rename "logs.data{}.source" as "Class"
@@ -79,7 +79,7 @@
       <title>Facts by host (from detailed reports, last report shown)</title>
       <table>
         <search>
-          <query>sourcetype="puppet:detailed" 
+          <query>`puppet_detailed_index` sourcetype="puppet:detailed" 
 | dedup 1 certname
 | eval "certname"=mvdedup('certname'),"facts.osfamily"=mvdedup('facts.osfamily'),"facts.uptime"=mvdedup('facts.uptime'),"facts.architecture"=mvdedup('facts.architecture'),"facts.architecture"=mvdedup('facts.architecture'),"facts.networking.ip"=mvdedup('facts.networking.ip')
 | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z")

@@ -17,7 +17,7 @@
       <fieldForLabel>pe_console</fieldForLabel>
       <fieldForValue>pe_console</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
         <earliest>$trendTime.earliest$</earliest>
         <latest>$trendTime.latest$</latest>
       </search>
@@ -29,7 +29,7 @@
       <fieldForLabel>field</fieldForLabel>
       <fieldForValue>field</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" $pe_console$ | fieldsummary | fields field</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | fieldsummary | fields field</query>
         <earliest>$trendTime.earliest$</earliest>
         <latest>$trendTime.latest$</latest>
       </search>
@@ -41,7 +41,7 @@
       <fieldForLabel>$factname$</fieldForLabel>
       <fieldForValue>$factname$</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" $pe_console$ | dedup $factname$ | table $factname$</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | dedup $factname$ | table $factname$</query>
         <earliest>$trendTime.earliest$</earliest>
         <latest>$trendTime.latest$</latest>
       </search>
@@ -50,7 +50,7 @@
       <fieldForLabel>field</fieldForLabel>
       <fieldForValue>field</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" $pe_console$ $factname$=$factvalue$ | fieldsummary | fields field</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ $factname$=$factvalue$ | fieldsummary | fields field</query>
         <earliest>$trendTime.earliest$</earliest>
         <latest>$trendTime.latest$</latest>
       </search>
@@ -66,7 +66,7 @@
       <chart>
         <title>Trending of fact $trendingfact$ for hosts where $factname$ = $factvalue$</title>
         <search>
-          <query>sourcetype="puppet:facts"
+          <query>`puppet_facts_index` sourcetype="puppet:facts"
 | search $factname$=$factvalue$ $pe_console$
 | rename "trusted.certname" as "Host"
 | bin span=$timewindow$ _time
@@ -127,7 +127,7 @@
       <table depends="$trendingfactvalue$">
         <title>Hosts with fact $trendingfact$ matching $trendingfactvalue$ between $human_earliest$ and $human_latest$</title>
         <search>
-          <query>sourcetype="puppet:facts"
+          <query>`puppet_facts_index` sourcetype="puppet:facts"
 | search $factname$=$factvalue$ AND $pe_console$ AND $trendingfact$=$trendingfactvalue$
 | eval "Timestamp"=strftime(_time, "%Y-%m-%d %T %:z")
 | bin span=$timewindow$ _time

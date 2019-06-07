@@ -16,7 +16,7 @@
       <fieldForLabel>pe_console</fieldForLabel>
       <fieldForValue>pe_console</fieldForValue>
       <search>
-        <query>sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
+        <query>`puppet_facts_index` sourcetype="puppet:facts" | dedup pe_console | table pe_console</query>
         <earliest>-24h@h</earliest>
         <latest>now</latest>
       </search>
@@ -29,7 +29,7 @@
       <title>Hosts by OS family</title>
       <chart>
         <search>
-          <query>sourcetype="puppet:facts" $pe_console$ | dedup host | top 10 os.name</query>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | dedup host | top 10 os.name</query>
           <earliest>$detailsTimeRange.earliest$</earliest>
           <latest>$detailsTimeRange.latest$</latest>
         </search>
@@ -42,7 +42,7 @@
       <title>Memory usage by percentage</title>
       <table>
         <search>
-          <query>sourcetype="puppet:facts" $pe_console$ | convert rmunit(memory.system.capacity) |dedup host | rename networking.hostname as "Host" | rename memory.system.capacity as "Memory Used" | table "Host" "Memory Used" | sort - "Memory Used"</query>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | convert rmunit(memory.system.capacity) |dedup host | rename host as "Host" | rename memory.system.capacity as "Memory Used" | table "Host" "Memory Used" | sort - "Memory Used"</query>
           <earliest>$detailsTimeRange.earliest$</earliest>
           <latest>$detailsTimeRange.latest$</latest>
         </search>
@@ -61,7 +61,7 @@
       <title>System load average</title>
       <table>
         <search>
-          <query>sourcetype="puppet:facts" $pe_console$ | stats avg(load_averages.15m) by networking.hostname | eval avg(load_averages.15m)=round('avg(load_averages.15m)',2) | table networking.hostname avg(load_averages.15m) | rename avg(load_averages.15m) as "Load Average" | rename "networking.hostname" as "Host" | sort - "Load Average"</query>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | stats avg(load_averages.15m) by host | eval avg(load_averages.15m)=round('avg(load_averages.15m)',2) | table host avg(load_averages.15m) | rename avg(load_averages.15m) as "Load Average" | rename host as "Host" | sort - "Load Average"</query>
           <earliest>$detailsTimeRange.earliest$</earliest>
           <latest>$detailsTimeRange.latest$</latest>
         </search>
@@ -83,7 +83,7 @@
       <chart depends="$title1$">
         <title>Memory usage on $title1$ over 24 Hours</title>
         <search>
-          <query>sourcetype="puppet:facts" networking.hostname=$title1$ $pe_console$| convert rmunit(memory.system.capacity) | stats avg(memory.system.capacity) by _time | rename "avg(memory.system.capacity)" as "Avg Memory" | predict "Avg Memory"</query>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" host=$title1$ $pe_console$| convert rmunit(memory.system.capacity) | stats avg(memory.system.capacity) by _time | rename "avg(memory.system.capacity)" as "Avg Memory" | predict "Avg Memory"</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
         </search>
@@ -98,7 +98,7 @@
       <chart depends="$title2$">
         <title>System load average on $title2$ over 24 Hours</title>
         <search>
-          <query>sourcetype="puppet:facts" networking.hostname=$title2$ $pe_console$ | stats avg(load_averages.15m) by _time | eval avg(load_averages.15m)=round('avg(load_averages.15m)',2) | rename avg(load_averages.15m) as LoadAvg15 | predict LoadAvg15</query>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" host=$title2$ $pe_console$ | stats avg(load_averages.15m) by _time | eval avg(load_averages.15m)=round('avg(load_averages.15m)',2) | rename avg(load_averages.15m) as LoadAvg15 | predict LoadAvg15</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
         </search>
@@ -110,23 +110,32 @@
   </row>
   <row>
     <panel>
-      <title>Facts by host (from detailed reports, last report shown)</title>
-      <input type="text" token="value" searchWhenChanged="true">
-        <label>Fact Name</label>
+      <title>Filter hosts by Inventory Data</title>
+      <input type="dropdown" token="factname" searchWhenChanged="true">
+        <label>Inventory Type</label>
+        <fieldForLabel>field</fieldForLabel>
+        <fieldForValue>field</fieldForValue>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | fieldsummary | fields field</query>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
+        </search>
         <default>os.family</default>
-        <initialValue>*</initialValue>
-        <suffix>="</suffix>
       </input>
-      <input type="text" searchWhenChanged="true" token="facts">
-        <label>Fact Value</label>
+      <input type="dropdown" token="factvalue" searchWhenChanged="true">
+        <label>Inventory Value</label>
         <default>*</default>
-        <prefix>$value$</prefix>
-        <suffix>"</suffix>
-        <initialValue>*</initialValue>
+        <fieldForLabel>$factname$</fieldForLabel>
+        <fieldForValue>$factname$</fieldForValue>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ | dedup $factname$ | table $factname$</query>
+          <earliest>$detailsTimeRange.earliest$</earliest>
+          <latest>$detailsTimeRange.latest$</latest>
+        </search>
       </input>
       <table>
         <search>
-          <query>sourcetype="puppet:facts" $facts$ $pe_console$
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $factname$=$factvalue$ $pe_console$
 | dedup 1 trusted.certname 
 | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z")
 | rename "trusted.certname" as "Host"
@@ -134,7 +143,7 @@
 | rename "os.family" as "OS Family"
 | rename "system_uptime.uptime" as "Uptime"
 | rename "os.architecture" as "Architecture"
-| rename "networking.ip" as "IPv4 address"
+| rename "ipaddress" as "IPv4 address"
 | rename environment as "Environment"
 | rename pe_console as "Puppet Install"
 | rename os.release.full as "OS Version"

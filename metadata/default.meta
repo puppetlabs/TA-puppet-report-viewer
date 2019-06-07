@@ -6,3 +6,39 @@ export = system
 [views]
 access = read : [ * ], write : [ admin ]
 export = none
+
+[macros/puppet_index]
+export = none
+owner = admin
+
+[macros/puppet_summary_index]
+export = none
+owner = admin
+
+[macros/puppet_detailed_index]
+export = none
+owner = admin
+
+[macros/puppet_facts_index]
+export = none
+owner = admin
+
+[macros/puppet_actions_index]
+export = none
+owner = admin
+
+[macros/puppet_bolt_index]
+export = none
+owner = admin
+
+[macros/puppet_metrics_index]
+export = none
+owner = admin
+
+[macros/puppet_run_index]
+export = none
+owner = admin
+
+[macros/puppet_all_index]
+export = none
+owner = admin
