@@ -62,6 +62,40 @@ For example, if you want most Puppet data to go to one index, but Facts, Metrics
 ```
 
 
+Troubleshooting and verification
+----------------
+If loading the Puppet Report Viewer app in the Splunk console does not appear to show any data after you have followed the setup guides for both this Splunk App/Add-on and the [splunk_hec module](https://github.com/puppetlabs/puppetlabs-splunk_hec), the first step is to check that data is being successfully sent to the Splunk server by following the troubleshooting and verification steps in the s[splunk_hec module](https://github.com/puppetlabs/puppetlabs-splunk_hec).
+
+If after verifying that Puppet is properly sending data to Splunk, the first issue may be that searches that populate the Splunk App aren't querying the right index. In Puppet Report Viewer versions released after 1.5.0, you can use the macro support described in Advanced Configuration options to set the index name. To find the index name, perfeorm a search by sourcetype across all indexes, and then click the disclosure `>` on the left side of the events and note the value used for `index` and provide that to the macro, do this for each sourcetype you are using (puppet:facts, puppet:summary, puppet:detailed are what are used in this app primarily as of this writing) if multiple indexes may be used.
+
+This is an example query: `index=* sourcetype=puppet:summary`
+
+If `puppet:detailed` sourcetype's are not showing up in search, that means that the Detailed Report Generator Alert is not configured or running properly. The app includes an alert that is disabled, but will trigger the alert as needed for any summary report that is submitted that isn't a normal, no change, puppet report. If this alert is enabled, and the setup screen has values in it, one can view the logs with the following Splunk search:
+
+`index=_internal sourcetype=splunkd component=sendmodalert action="generate_detailed_report"`
+
+If there are no error messages, then verify that the HEC token supplied works and can be used to submit an example report properly, runnging this command from a unix or command line will submit a dummy puppet:detailed event (such as a Splunk server):
+
+```
+[cbarker@splunk-dev ~]$ curl -k -H "Authorization: Splunk yourHECtoken" https://localhost:8088/services/collector/event -d '{"sourcetype": "puppet:detailed", "event": "exampletest"}'
+```
+The endpoint will respond with either a success or an error message, follow steps in the [HTTP Event Collector](https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector) to resolve issues with the HEC.
+
+If there are other error messages in the logs related to authentication tokens from the Puppet side, this command will attempt to do a search of the PuppetDB system:
+
+```
+curl -k 'https://<your.puppetdb.server>:8081/pdb/query/v4/nodes' -H "X-Authentication: <token contents>"
+```
+
+Responses will be in json, so piping the output through python may be helpful:
+
+```
+curl -k 'https://<your.puppetdb.server>:8081/pdb/query/v4/nodes' -H "X-Authentication: <token contents>" | python -m json.tool
+```
+
+Diagnose issues with PE auth tokens following [PE access documentation](https://puppet.com/docs/pe/latest/managing_access.html).
+
+
 More information
 ----------------
 
