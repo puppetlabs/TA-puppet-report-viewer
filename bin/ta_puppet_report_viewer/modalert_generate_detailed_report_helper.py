@@ -2,7 +2,7 @@
 import json
 import requests
 import collections
-import puppet_report_generation
+from puppet_report_generation import run_report_generation
 from datetime import datetime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
