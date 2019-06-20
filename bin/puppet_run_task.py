@@ -7,12 +7,12 @@ import os
 import sys
 
 from alert_actions_base import ModularAlertBase
-import modalert_generate_detailed_report_helper
+import modalert_puppet_run_task_helper
 
-class AlertActionWorkergenerate_detailed_report(ModularAlertBase):
+class AlertActionWorkerpuppet_run_task(ModularAlertBase):
 
     def __init__(self, ta_name, alert_name):
-        super(AlertActionWorkergenerate_detailed_report, self).__init__(ta_name, alert_name)
+        super(AlertActionWorkerpuppet_run_task, self).__init__(ta_name, alert_name)
 
     def validate_params(self):
 
@@ -35,6 +35,14 @@ class AlertActionWorkergenerate_detailed_report(ModularAlertBase):
         if not self.get_global_setting("splunk_hec_token"):
             self.log_error('splunk_hec_token is a mandatory setup parameter, but its value is None.')
             return False
+
+        if not self.get_param("bolt_target"):
+            self.log_error('bolt_target is a mandatory parameter, but its value is None.')
+            return False
+
+        if not self.get_param("task_name"):
+            self.log_error('task_name is a mandatory parameter, but its value is None.')
+            return False
         return True
 
     def process_event(self, *args, **kwargs):
@@ -42,7 +50,7 @@ class AlertActionWorkergenerate_detailed_report(ModularAlertBase):
         try:
             if not self.validate_params():
                 return 3
-            status = modalert_generate_detailed_report_helper.process_event(self, *args, **kwargs)
+            status = modalert_puppet_run_task_helper.process_event(self, *args, **kwargs)
         except (AttributeError, TypeError) as ae:
             self.log_error("Error: {}. Please double check spelling and also verify that a compatible version of Splunk_SA_CIM is installed.".format(ae.message))
             return 4
@@ -57,5 +65,5 @@ class AlertActionWorkergenerate_detailed_report(ModularAlertBase):
         return status
 
 if __name__ == "__main__":
-    exitcode = AlertActionWorkergenerate_detailed_report("TA-puppet-report-viewer", "generate_detailed_report").run(sys.argv)
+    exitcode = AlertActionWorkerpuppet_run_task("TA-puppet-report-viewer", "puppet_run_task").run(sys.argv)
     sys.exit(exitcode)

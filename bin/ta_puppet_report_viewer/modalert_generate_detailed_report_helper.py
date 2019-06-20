@@ -2,6 +2,7 @@
 import json
 import requests
 import collections
+import puppet_report_generation
 from datetime import datetime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -87,16 +88,26 @@ def process_event(helper, *args, **kwargs):
     [sample_code_macro:start]
 
     # The following example gets the setup parameters and prints them to the log
-    puppet_db_server = helper.get_global_setting("puppet_db_server")
-    helper.log_info("puppet_db_server={}".format(puppet_db_server))
-    auth_token = helper.get_global_setting("auth_token")
-    helper.log_info("auth_token={}".format(auth_token))
-    splunk_server = helper.get_global_setting("splunk_server")
-    helper.log_info("splunk_server={}".format(splunk_server))
+    puppet_enterprise_console = helper.get_global_setting("puppet_enterprise_console")
+    helper.log_info("puppet_enterprise_console={}".format(puppet_enterprise_console))
+    puppet_read_user = helper.get_global_setting("puppet_read_user")
+    helper.log_info("puppet_read_user={}".format(puppet_read_user))
+    puppet_read_user_pass = helper.get_global_setting("puppet_read_user_pass")
+    helper.log_info("puppet_read_user_pass={}".format(puppet_read_user_pass))
+    splunk_hec_url = helper.get_global_setting("splunk_hec_url")
+    helper.log_info("splunk_hec_url={}".format(splunk_hec_url))
     splunk_hec_token = helper.get_global_setting("splunk_hec_token")
     helper.log_info("splunk_hec_token={}".format(splunk_hec_token))
-    pe_console = helper.get_global_setting("pe_console")
-    helper.log_info("pe_console={}".format(pe_console))
+    bolt_user = helper.get_global_setting("bolt_user")
+    helper.log_info("bolt_user={}".format(bolt_user))
+    bolt_user_pass = helper.get_global_setting("bolt_user_pass")
+    helper.log_info("bolt_user_pass={}".format(bolt_user_pass))
+    puppet_bolt_server = helper.get_global_setting("puppet_bolt_server")
+    helper.log_info("puppet_bolt_server={}".format(puppet_bolt_server))
+    puppet_action_hec_token = helper.get_global_setting("puppet_action_hec_token")
+    helper.log_info("puppet_action_hec_token={}".format(puppet_action_hec_token))
+    puppet_db_url = helper.get_global_setting("puppet_db_url")
+    helper.log_info("puppet_db_url={}".format(puppet_db_url))
 
     # The following example gets the alert action parameters and prints them to the log
     transaction_uuid = helper.get_param("transaction_uuid")
@@ -122,11 +133,32 @@ def process_event(helper, *args, **kwargs):
     [sample_code_macro:end]
     """
 
-    #helper.log_info("Alert action generate_detailed_report started.")
-    
+    # Lets generate that dict we need
+
+    alert = {}
+    alert['global'] = {}
+    alert['param'] = {}
+
+    alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
+    alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
+    alert['global']['puppet_read_user_pass'] = helper.get_global_setting("puppet_read_user_pass")
+    alert['global']['splunk_hec_url'] = helper.get_global_setting("splunk_hec_url")
+    alert['global']['splunk_hec_token'] = helper.get_global_setting("splunk_hec_token")
+    alert['global']['bolt_user'] = helper.get_global_setting("bolt_user")
+    alert['global']['bolt_user_pass'] = helper.get_global_setting("bolt_user_pass")
+    alert['global']['puppet_bolt_server'] = helper.get_global_setting("puppet_bolt_server")
+    alert['global']['puppet_action_hec_token'] = helper.get_global_setting("puppet_action_hec_token")
+    alert['global']['puppet_db_url'] = helper.get_global_setting("puppet_db_url")
+
+    alert['param']['transaction_uuid'] = helper.get_param("transaction_uuid")
+
     events = helper.get_events()
     for event in events:
-        event_dict = event
+        alert['event'] = json.loads(event['_raw'])
+    
+    run_report_generation(alert)
+
+
 
     #helper.log_info(event_dict)
 
@@ -150,6 +182,13 @@ def process_event(helper, *args, **kwargs):
     splunk_server = helper.get_global_setting("splunk_server")
     hec_token = helper.get_global_setting("splunk_hec_token")
 
+    
+    
+    
+    
+    
+    
+    
     resource_response = get_resource_events(uuid, puppet_db_server, auth_token)
 
     detailed_report = resource_response[0]
