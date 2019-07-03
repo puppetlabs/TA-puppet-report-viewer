@@ -23,29 +23,29 @@ import pie
 
 def run_bolt_task(alertdata):
 
-    # parse puppet_enterprise_console and define URI
+  # parse puppet_enterprise_console and define URI
 
-    # set pe_console value
+  # set pe_console value
 
-    # check if puppet_db_url also exists, that overrides pe_console for accessing puppetdb
+  # check if puppet_db_url also exists, that overrides pe_console for accessing puppetdb
 
-    # pie.rbac.genauthtoken using the right url
+  # pie.rbac.genauthtoken using the right url
 
-    # parse params from event data (transactuuid, etc)
+  # parse params from event data (transactuuid, etc)
 
-    # notify splunk hec with action that performing lookup of report for transactionuuid
-    # pie.hec.submit()
+  # notify splunk hec with action that performing lookup of report for transactionuuid
+  # pie.hec.submit()
 
-    # pie.pdb.getpuppetreport with array of fields to use
+  # pie.pdb.getpuppetreport with array of fields to use
 
-    # optionally get facts
+  # optionally get facts
 
-    # generate final detailed report dict
+  # generate final detailed report dict
 
-    # pie.hec.submit() with report dict, hec token, url
+  # pie.hec.submit() with report dict, hec token, url
 
-    # if error, parse / handle error / submit data to action end point
+  # if error, parse / handle error / submit data to action end point
 
 
 
-    print('foo')
+  print('foo')

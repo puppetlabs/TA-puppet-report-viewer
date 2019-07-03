@@ -154,7 +154,7 @@ def process_event(helper, *args, **kwargs):
 
     events = helper.get_events()
     for event in events:
-        alert['event'] = json.loads(event['_raw'])
+        alert['result'] = json.loads(event)
     
     run_report_generation(alert)
 
