@@ -26,6 +26,7 @@ alert['param']['bolt_investigate_name'] = 'lastlogin'
 alert['param']['bolt_investigate_target'] = 'web-front-ends-4nh1.c.splunk-217321.internal'
 
 
+
 result_json = open('result.json')
 results = json.load(result_json)
 result_json.close

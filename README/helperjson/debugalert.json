@@ -12,7 +12,7 @@
     "splunk_hec_url": "https://splunk.angrydome.org:8088/services/collector"
   },
   "param": {
-    "bolt_investigate_name": "lastlogin",
+    "bolt_investigate_name": "lastogin",
     "bolt_investigate_target": "web-front-ends-4nh1.c.splunk-217321.internal",
     "transaction_uuid": "6b6ae8ad-fe34-4b34-9f64-9bd00eeb5d4b"
   },

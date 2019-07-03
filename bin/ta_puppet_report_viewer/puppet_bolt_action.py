@@ -1,4 +1,3 @@
-
 # encoding = utf-8
 
 import pie
@@ -58,6 +57,7 @@ def run_bolt_task(alert):
     'message': 'Running task {} on {} '.format(task_name,bolt_target),
     'action_type': 'task',
     'action_name': task_name,
+    'action_state': 'starting',
     'alert_event': alert['result'],
   }
 
@@ -80,12 +80,25 @@ def run_bolt_task(alert):
 
   # right now we're only running tasks against a single target, but may have things in the future returing multiple nodes
   for result in jobresults['items']:
-    if result['state'] == 'finished':
-      rmessage = message
+    rmessage = message
+    rmessage['action_state'] = result['state']
+    rmessage['joburl'] = '{}/#/run/jobs/{}'.format(pe_console,jobid)
+    rmessage['result'] = result['result']
+    rmessage['transaction_uuid'] = result['transaction_uuid'] or message['transaction_uuid']
+    rmessage['start_timestamp'] = result['start_timestamp']
+    rmessage['duration'] = result['duration']
+    rmessage['finish_timestamp'] = result['finish_timestamp']
+    
+    if rmessage['action_state'] == 'finished':
       rmessage['message'] = 'Successfully ran task {} on {} '.format(task_name,result['name'])
-      rmessage['joburl'] = '{}/#/run/jobs/{}'.format(pe_console,jobid)
-      rmessage['result'] = result['result']
-      pie.hec.post_action(rmessage, result['name'], splunk_hec_url, puppet_action_hec_token)
+    elif result['state'] == 'failed':
+      rmessage['message'] = 'Failed to run task {} on {} '.format(task_name,result['name'])
+    else:
+      rmessage['message'] = 'Something happened to task {} on {} that we have no idea about'.format(task_name,result['name'])
+      
+    print(json.dumps(rmessage))
+    pie.hec.post_action(rmessage, result['name'], splunk_hec_url, puppet_action_hec_token)
+
 
 
 # this is our interactive load option
