@@ -1,6 +1,9 @@
 
 # encoding = utf-8
 
+import json
+from puppet_bolt_action import run_bolt_task
+
 def process_event(helper, *args, **kwargs):
     """
     # IMPORTANT
@@ -65,4 +68,31 @@ def process_event(helper, *args, **kwargs):
     helper.log_info("Alert action puppet_run_task_investigate started.")
 
     # TODO: Implement your alert action logic here
+
+    alert = {}
+    alert['global'] = {}
+    alert['param'] = {}
+
+    alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
+    alert['global']['splunk_hec_url'] = helper.get_global_setting("splunk_hec_url")
+    alert['global']['bolt_user'] = helper.get_global_setting("bolt_user")
+    alert['global']['bolt_user_pass'] = helper.get_global_setting("bolt_user_pass")
+    alert['global']['puppet_bolt_server'] = helper.get_global_setting("puppet_bolt_server")
+    alert['global']['puppet_action_hec_token'] = helper.get_global_setting("puppet_action_hec_token")
+    alert['global']['puppet_db_url'] = helper.get_global_setting("puppet_db_url")
+
+    # The following example gets the alert action parameters and prints them to the log
+    alert['param']['bolt_investigate_target'] = helper.get_param("bolt_investigate_target")
+    alert['param']['bolt_investigate_name'] = helper.get_param("bolt_investigate_name")
+    alert['param']['task_type'] = 'investigate'
+    
+
+    events = helper.get_events()
+    for event in events:
+        alert['result'] = json.loads(event)
+
+
+
+
+
     return 0
