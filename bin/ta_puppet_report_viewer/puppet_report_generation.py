@@ -67,7 +67,7 @@ def run_report_generation(alert):
   pdb_url = alert['global']['puppet_db_url'] or endpoints['pdb']
 
   splunk_hec_url = alert['global']['splunk_hec_url']
-  puppet_action_hec_token = alert['global']['puppet_action_hec_token']
+  puppet_action_hec_token = alert['global']['puppet_action_hec_token'] or alert['global']['splunk_hec_token']
 
   message = {
     'message': 'Looking up detailed report for run: {}'.format(transaction_uuid),

@@ -57,13 +57,13 @@ def process_event(helper, *args, **kwargs):
     helper.log_info("server_uri={}".format(helper.settings["server_uri"]))
     [sample_code_macro:end]
     """
+    helper.log_info("Alert action Generate Detailed Report started.")
 
     # Lets generate that dict we need
 
     alert = {}
     alert['global'] = {}
     alert['param'] = {}
-
     alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
     alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
     alert['global']['puppet_read_user_pass'] = helper.get_global_setting("puppet_read_user_pass")
@@ -75,9 +75,13 @@ def process_event(helper, *args, **kwargs):
     alert['param']['transaction_uuid'] = helper.get_param("transaction_uuid")
 
     events = helper.get_events()
-    for event in events:
-        alert['result'] = json.loads(event)
     
+    for event in events:
+        alert['result'] = event
+    
+    helper.log_info("Alert action data extracted and passed to run_report_generation.")
     run_report_generation(alert)
+
+    helper.log_info("run_report_generation completed successfully.")
 
     return 0

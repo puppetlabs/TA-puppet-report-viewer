@@ -2,7 +2,7 @@
 # encoding = utf-8
 
 import json
-from puppet_bolt_action import run_bolt_task
+from puppet_bolt_action import run_bolt_task_investigate
 
 def process_event(helper, *args, **kwargs):
     """
@@ -69,15 +69,20 @@ def process_event(helper, *args, **kwargs):
 
     # TODO: Implement your alert action logic here
 
+    # this needs to be a standard function to keep the alert object consistent between modalerts
+
     alert = {}
     alert['global'] = {}
     alert['param'] = {}
 
     alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
     alert['global']['splunk_hec_url'] = helper.get_global_setting("splunk_hec_url")
+    alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
+    alert['global']['puppet_read_user_pass'] = helper.get_global_setting("puppet_read_user_pass")
     alert['global']['bolt_user'] = helper.get_global_setting("bolt_user")
     alert['global']['bolt_user_pass'] = helper.get_global_setting("bolt_user_pass")
     alert['global']['puppet_bolt_server'] = helper.get_global_setting("puppet_bolt_server")
+    alert['global']['splunk_hec_token'] = helper.get_global_setting("splunk_hec_token")
     alert['global']['puppet_action_hec_token'] = helper.get_global_setting("puppet_action_hec_token")
     alert['global']['puppet_db_url'] = helper.get_global_setting("puppet_db_url")
 
@@ -89,10 +94,11 @@ def process_event(helper, *args, **kwargs):
 
     events = helper.get_events()
     for event in events:
-        alert['result'] = json.loads(event)
+        alert['result'] = event
 
+    helper.log_info("Alert action data extracted and passed to run_bolt_task_investigate.")
+    run_bolt_task_investigate(alert)
 
-
-
+    helper.log_info("run_bolt_task_investigate completed successfully.")
 
     return 0

@@ -48,7 +48,7 @@ def run_bolt_task(alert):
   puppet_environment = alert['param']['puppet_environment']
 
   splunk_hec_url = alert['global']['splunk_hec_url']
-  puppet_action_hec_token = alert['global']['puppet_action_hec_token']
+  puppet_action_hec_token = alert['global']['puppet_action_hec_token'] or alert['global']['splunk_hec_token']
 
   bolt_target = alert['param']['bolt_target']
   task_name = alert['param']['task_name']
@@ -67,8 +67,8 @@ def run_bolt_task(alert):
 
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
   
-  bolt_user = alert['global']['bolt_user']
-  bolt_user_pass = alert['global']['bolt_user_pass']
+  bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
+  bolt_user_pass = alert['global']['bolt_user_pass'] or alert['global']['puppet_read_user_pass']
 
   auth_token = pie.rbac.genauthtoken(bolt_user,bolt_user_pass,'splunk report viewer',rbac_url)
 
@@ -95,8 +95,7 @@ def run_bolt_task(alert):
       rmessage['message'] = 'Failed to run task {} on {} '.format(task_name,result['name'])
     else:
       rmessage['message'] = 'Something happened to task {} on {} that we have no idea about'.format(task_name,result['name'])
-      
-    print(json.dumps(rmessage))
+
     pie.hec.post_action(rmessage, result['name'], splunk_hec_url, puppet_action_hec_token)
 
 
