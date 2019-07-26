@@ -30,7 +30,7 @@ def run_bolt_task_investigate(alert):
   alert['param']['task_name'] = task_name
   alert['param']['task_parameters'] = {}
   alert['param']['bolt_target'] = alert['param']['bolt_investigate_target']
-  
+
   # hardcoding to production for Investigate module
   alert['param']['puppet_environment'] = 'production'
 
@@ -94,7 +94,6 @@ def run_bolt_task(alert):
     else:
       rmessage['message'] = 'Something happened to task {} on {} that we have no idea about'.format(task_name,result['name'])
 
-    print "GH: posting this result? {0}".format(rmessage)
     pie.hec.post_action(rmessage, result['name'], splunk_hec_url, puppet_action_hec_token)
 
 
