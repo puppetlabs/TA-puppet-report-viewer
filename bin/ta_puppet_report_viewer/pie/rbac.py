@@ -10,7 +10,7 @@ except ImportError:
   import urllib3
   urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
+#https://puppet.angrydome.org:4433/rbac-api/v1/auth/token
 def genauthtoken(username, password, label, url):
   req = {
     'login': username,
@@ -18,18 +18,14 @@ def genauthtoken(username, password, label, url):
     'lifetime': '0',
     'label': label,
   }
-
-  endpoint = '{}/auth/token'.format(url)
-
-  #https://puppet.angrydome.org:4433/rbac-api/v1/auth/token
+  
   try:
-    r = requests.post(endpoint, json=req, verify=False)
+    r = requests.post('{}/auth/token'.format(url), json=req, verify=False)
   except:
     print('Unexpected error:', sys.exc_info()[0])
     raise
   
-  if r.status_code == 200:
-    token = json.loads(r.text)['token']
-    return token
-  else:
+  if r.status_code != 200:
     raise ValueError('Unable to get PE auth token', r.status_code, r.text)
+
+  return json.loads(r.text)['token']

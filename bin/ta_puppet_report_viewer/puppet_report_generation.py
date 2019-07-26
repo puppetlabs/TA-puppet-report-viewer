@@ -1,5 +1,6 @@
 # encoding = utf-8
 import pie
+from time import strftime
 
 # alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
 # alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
@@ -83,10 +84,14 @@ def run_report_generation(alert):
 
   auth_token = pie.rbac.genauthtoken(pdbuser,pdbpass,'splunk report viewer',rbac_url)
 
-  detailed_report = pie.pdb.query(pql,pdb_url,auth_token)[0]
+  detailed_report = {}
+  try:
+    detailed_report = pie.pdb.query(pql, pdb_url, auth_token)[0]
+  except Exception as e:
+    raise Exception("Puppet DB query {0} returned no results".format(pql))
 
   splunk_hec_token = alert['global']['splunk_hec_token']
-
+  
   pie.hec.post_report(detailed_report,splunk_hec_url,splunk_hec_token)
 
 # this is our interactive load option

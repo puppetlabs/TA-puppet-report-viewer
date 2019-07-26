@@ -11,13 +11,25 @@ except ImportError:
   import urllib3
   urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+#https://puppet.angrydome.org:8143/orchestrator/v1/command/task
+def post(endpoint, req, headers):
+
+  try:
+    r = requests.post(endpoint, json=req, headers=headers, verify=False)
+  except:
+    print('Unexpected error:', sys.exc_info()[0])
+    raise
+
+  if r.status_code != 202:
+    raise ValueError('Unable to submit task command', r.status_code, r.text)
+
+  return json.loads(r.text)['job']
+
 def reqtask(node, task, token, environment, url, parameters=None):
   headers = {'X-Authentication': token}
-
+  params = {}
   if parameters:
     params = json.loads(parameters)
-  else:
-    params = {}
   
   req = {
     'environment' : environment,
@@ -28,20 +40,7 @@ def reqtask(node, task, token, environment, url, parameters=None):
     }
   }
 
-  endpoint = '{}/command/task'.format(url)
-
-  #https://puppet.angrydome.org:8143/orchestrator/v1/command/task
-  try:
-    r = requests.post(endpoint, json=req, headers=headers, verify=False)
-  except:
-    print('Unexpected error:', sys.exc_info()[0])
-    raise
-  
-  if r.status_code == 202:
-    job = json.loads(r.text)['job']
-    return job
-  else:
-    raise ValueError('Unable to submit task command', r.status_code, r.text)
+  return post('{}/command/task'.format(url), req, headers)
 
 def reqdeploy(node, noop, token, environment, url):
   headers = {'X-Authentication': token}
@@ -54,20 +53,8 @@ def reqdeploy(node, noop, token, environment, url):
     }
   }
 
-  endpoint = '{}/command/deploy'.format(url)
+  return post('{}/command/deploy'.format(url), req, headers)
 
-  #https://puppet.angrydome.org:8143/orchestrator/v1/command/deploy
-  try:
-    r = requests.post(endpoint, json=req, headers=headers, verify=False)
-  except:
-    print('Unexpected error:', sys.exc_info()[0])
-    raise
-  
-  if r.status_code == 202:
-    job = json.loads(r.text)['job']
-    return job
-  else:
-    raise ValueError('Unable to submit task command', r.status_code, r.text)
 
 
 # Get job state
@@ -79,11 +66,11 @@ def getjobstate(joburl, token):
   except:
     print('Unexpected error:', sys.exc_info()[0])
     raise
-  
-  if r.status_code == 200:
-    return json.loads(r.text)['state']
-  else:
+ 
+  if r.status_code != 200:
     raise ValueError('Unable to get job status endpoints:', joburl, r.status_code, r.text)
+  
+  return json.loads(r.text)['state']
 
 
 # Get a Job Result
@@ -93,17 +80,15 @@ def getjobresult(job, token, url, wait=2, timeout=30):
   joburl = '{}/jobs/{}'.format(url,job)
 
   runtime = 0
-
   completed = ['stopped', 'finished', 'failed']
-  
   while runtime <= timeout:
     if getjobstate(joburl, token) in completed:
       result = getjobreport(job, token, url)
       return result
-    else:
-      time.sleep(wait)
-      runtime += wait
-  
+
+    time.sleep(wait)
+    runtime += wait
+
   # we should only get here because of timeout
   raise ValueError('Timeout execeeded waiting for:', job, runtime)
 
@@ -112,7 +97,6 @@ def getjobresult(job, token, url, wait=2, timeout=30):
 # pseudo private method of getjobresult
 def getjobreport(job, token, url):
   headers = {'X-Authentication': token}
-
   reporturl = '{}/jobs/{}/nodes'.format(url,job)
 
   #https://puppet.angrydome.org:8143/orchestrator/v1/jobs/jobidnumber/nodes
@@ -121,9 +105,9 @@ def getjobreport(job, token, url):
   except:
     print('Unexpected error:', sys.exc_info()[0])
     raise
-  
+
   if r.status_code == 200:
     report = json.loads(r.text)
     return report
-  else:
-    raise ValueError('Unable to get job status for job name:', job, r.status_code, r.text)
+
+  raise ValueError('Unable to get job status for job name:', job, r.status_code, r.text)

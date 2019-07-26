@@ -11,42 +11,31 @@ except ImportError:
   import urllib3
   urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# https://puppet.angrydome.org:8081/pdb/query/v4
 def getpuppetreport(uuid, url, token):
-  
-  # setup the headers
-  headers = {'X-Authentication': token}
-
-  # https://puppet.angrydome.org:8081/pdb/query/v4
-
   query_string = {}
   query_string['query'] = 'reports[] {{ transaction_uuid = "{}" }}'.format(uuid)
   
   try:
-    r = requests.post(url, json=query_string, headers=headers, verify=False)
+    r = requests.post(url, json=query_string, headers={'X-Authentication': token}, verify=False)
   except:
     print('Unexpected error:', sys.exc_info()[0])
     raise
   
-  if r.status_code == 200:
-    report = json.loads(r.text)
-    return report
-  else:
+  if r.status_code != 200:
     raise ValueError('Unable to get report for transaction uuid:', uuid, r.status_code, r.text)
-  
+
+  return json.loads(r.text)
+
+# https://puppet.angrydome.org:8081/pdb/query/v4
 def query(pql, url, token):
-  # setup the headers
-  headers = {'X-Authentication': token}
-
-  # https://puppet.angrydome.org:8081/pdb/query/v4
-
   try:
-    r = requests.post(url, json=pql, headers=headers, verify=False)
+    r = requests.post(url, json=pql, headers={'X-Authentication': token}, verify=False)
   except:
     print('Unexpected error:', sys.exc_info()[0])
     raise
   
-  if r.status_code == 200:
-    report = json.loads(r.text)
-    return report
-  else:
+  if r.status_code != 200:
     raise ValueError('Unable run query:', pql, r.status_code, r.text)
+
+  return json.loads(r.text)

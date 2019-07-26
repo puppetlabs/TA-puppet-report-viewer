@@ -44,12 +44,9 @@ def run_bolt_task(alert):
   endpoints = pie.util.getendpoints(pe_console)
   rbac_url = endpoints['rbac']
   bolt_url = alert['global']['puppet_bolt_server'] or endpoints['bolt']
-
   puppet_environment = alert['param']['puppet_environment']
-
   splunk_hec_url = alert['global']['splunk_hec_url']
   puppet_action_hec_token = alert['global']['puppet_action_hec_token'] or alert['global']['splunk_hec_token']
-
   bolt_target = alert['param']['bolt_target']
   task_name = alert['param']['task_name']
 
@@ -66,16 +63,17 @@ def run_bolt_task(alert):
     message['transaction_uuid'] = alert['result']['transaction_uuid']
 
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
-  
   bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
   bolt_user_pass = alert['global']['bolt_user_pass'] or alert['global']['puppet_read_user_pass']
-
   auth_token = pie.rbac.genauthtoken(bolt_user,bolt_user_pass,'splunk report viewer',rbac_url)
 
-  job = pie.bolt.reqtask(bolt_target,task_name,auth_token,puppet_environment,bolt_url)
+  job = pie.bolt.reqtask(bolt_target,
+                         task_name,
+                         auth_token,
+                         puppet_environment,
+                         bolt_url)
 
   jobid = job['name']
-
   jobresults = pie.bolt.getjobresult(jobid, auth_token, bolt_url)
 
   # right now we're only running tasks against a single target, but may have things in the future returing multiple nodes
@@ -88,7 +86,7 @@ def run_bolt_task(alert):
     rmessage['start_timestamp'] = result['start_timestamp']
     rmessage['duration'] = result['duration']
     rmessage['finish_timestamp'] = result['finish_timestamp']
-    
+
     if rmessage['action_state'] == 'finished':
       rmessage['message'] = 'Successfully ran task {} on {} '.format(task_name,result['name'])
     elif result['state'] == 'failed':
@@ -96,6 +94,7 @@ def run_bolt_task(alert):
     else:
       rmessage['message'] = 'Something happened to task {} on {} that we have no idea about'.format(task_name,result['name'])
 
+    print "GH: posting this result? {0}".format(rmessage)
     pie.hec.post_action(rmessage, result['name'], splunk_hec_url, puppet_action_hec_token)
 
 
@@ -107,7 +106,6 @@ def run_bolt_task(alert):
 if __name__ == "__main__":
   import sys
   import json
-  
+
   alert = json.load(sys.stdin)
-  
   run_bolt_task_investigate(alert)

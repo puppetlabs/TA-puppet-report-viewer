@@ -14,7 +14,7 @@ except ImportError:
 def post_report(detailed_report, hec_url, hec_token):
   # setup the headers
   headers = {"Authorization" : 'Splunk {} '.format(hec_token) }
-  
+
   # cleanup start_time
   # start_time = 2019-04-03T12:41:27.481Z
   utc_time = datetime.strptime(detailed_report['start_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -26,6 +26,7 @@ def post_report(detailed_report, hec_url, hec_token):
     'sourcetype': 'puppet:detailed',
     'event': detailed_report
   }
+  
 
   requests.post(hec_url, json=report, headers=headers, verify=False)
 
