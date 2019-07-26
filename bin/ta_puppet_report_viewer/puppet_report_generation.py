@@ -1,6 +1,5 @@
 # encoding = utf-8
 import pie
-from time import strftime
 
 # alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
 # alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
