@@ -15,17 +15,27 @@ util.remove_http_proxy_env_vars()
 
 fields_additional_parameters = [
     field.RestField(
-        'puppet_db_server',
+        'puppet_enterprise_console',
         required=True,
         encrypted=False,
-        default='puppet.company.com',
+        default='https://puppet.company.com',
         validator=validator.String(
             max_len=8192, 
             min_len=0, 
         )
     ), 
     field.RestField(
-        'auth_token',
+        'puppet_read_user',
+        required=True,
+        encrypted=False,
+        default='splunk',
+        validator=validator.String(
+            max_len=8192, 
+            min_len=0, 
+        )
+    ), 
+    field.RestField(
+        'puppet_read_user_pass',
         required=True,
         encrypted=True,
         default='',
@@ -35,10 +45,10 @@ fields_additional_parameters = [
         )
     ), 
     field.RestField(
-        'splunk_server',
+        'splunk_hec_url',
         required=True,
         encrypted=False,
-        default='splunk.company.com',
+        default='https://splunk.company.coml:8088/services/collector',
         validator=validator.String(
             max_len=8192, 
             min_len=0, 
@@ -47,6 +57,26 @@ fields_additional_parameters = [
     field.RestField(
         'splunk_hec_token',
         required=True,
+        encrypted=False,
+        default='',
+        validator=validator.String(
+            max_len=8192, 
+            min_len=0, 
+        )
+    ), 
+    field.RestField(
+        'bolt_user',
+        required=False,
+        encrypted=False,
+        default='',
+        validator=validator.String(
+            max_len=8192, 
+            min_len=0, 
+        )
+    ), 
+    field.RestField(
+        'bolt_user_pass',
+        required=False,
         encrypted=True,
         default='',
         validator=validator.String(
@@ -55,7 +85,27 @@ fields_additional_parameters = [
         )
     ), 
     field.RestField(
-        'pe_console',
+        'puppet_bolt_server',
+        required=False,
+        encrypted=False,
+        default='',
+        validator=validator.String(
+            max_len=8192, 
+            min_len=0, 
+        )
+    ), 
+    field.RestField(
+        'puppet_action_hec_token',
+        required=False,
+        encrypted=False,
+        default='',
+        validator=validator.String(
+            max_len=8192, 
+            min_len=0, 
+        )
+    ), 
+    field.RestField(
+        'puppet_db_url',
         required=False,
         encrypted=False,
         default='',

@@ -1,0 +1,62 @@
+{
+  "global": {
+    "bolt_user": "splunkrunner",
+    "bolt_user_pass": "puppetlabs",
+    "puppet_action_hec_token": "7b2802a3-d11d-4a75-8ded-fa1acd1fbed6",
+    "puppet_bolt_server": "https://puppet.angrydome.org:8143/orchestrator/v1",
+    "puppet_db_url": "https://puppet.angrydome.org:8081/pdb/query/v4",
+    "puppet_enterprise_console": "https://puppet.angrydome.org",
+    "puppet_read_user": "splunk",
+    "puppet_read_user_pass": "puppetlabs",
+    "splunk_hec_token": "fdc081b8-feb7-4e1b-97cc-6a8d141b7cd0",
+    "splunk_hec_url": "https://splunk.angrydome.org:8088/services/collector"
+  },
+  "param": {
+    "transaction_uuid": "6b6ae8ad-fe34-4b34-9f64-9bd00eeb5d4b"
+  },
+  "result": {
+    "_confstr": "source::http:puppet:summary|host::web-front-ends-4nh1.c.splunk-217321.internal|puppet:summary",
+    "_eventtype_color": "",
+    "_indextime": "1557290677",
+    "_raw": "{\"cached_catalog_status\":\"not_used\",\"catalog_uuid\":\"764c768b-daeb-4977-9fb8-32dc1be9ba14\",\"certname\":\"web-front-ends-4nh1.c.splunk-217321.internal\",\"code_id\":\"urn:puppet:code-id:1:5466eb66f5aca3d01c101fabf2a2bd846830473a;production\",\"configuration_version\":\"puppet-production-6bc675d64a4\",\"corrective_change\":false,\"environment\":\"production\",\"job_id\":null,\"metrics\":{\"time\":{\"config_retrieval\":1.3928804732859135,\"fact_generation\":1.5210940204560757,\"catalog_application\":1.0140889920294285,\"total\":7.349034128},\"resources\":{\"total\":136},\"changes\":{\"total\":0}},\"noop\":false,\"noop_pending\":false,\"pe_console\":\"puppet.angrydome.org\",\"producer\":\"puppet.c.splunk-217321.internal\",\"puppet_version\":\"6.4.1\",\"report_format\":10,\"status\":\"unchanged\",\"time\":\"2019-05-08T04:44:30.348Z\",\"transaction_uuid\":\"2bd49f85-7811-4a2d-9ed5-0d3591966da7\"}",
+    "_serial": "3",
+    "_si": [
+      "splunk-dev.c.splunk-217321.internal",
+      "main"
+    ],
+    "_sourcetype": "puppet:summary",
+    "_subsecond": ".348",
+    "_time": "1557290670.348",
+    "cached_catalog_status": "not_used",
+    "catalog_uuid": "764c768b-daeb-4977-9fb8-32dc1be9ba14",
+    "certname": "web-front-ends-4nh1.c.splunk-217321.internal",
+    "code_id": "urn:puppet:code-id:1:5466eb66f5aca3d01c101fabf2a2bd846830473a;production",
+    "configuration_version": "puppet-production-6bc675d64a4",
+    "corrective_change": "false",
+    "environment": "production",
+    "eventtype": "",
+    "host": "web-front-ends-4nh1.c.splunk-217321.internal",
+    "index": "main",
+    "job_id": "null",
+    "linecount": "",
+    "metrics.changes.total": "0",
+    "metrics.resources.total": "136",
+    "metrics.time.catalog_application": "1.0140889920294285",
+    "metrics.time.config_retrieval": "1.3928804732859135",
+    "metrics.time.fact_generation": "1.5210940204560757",
+    "metrics.time.total": "7.349034128",
+    "noop": "false",
+    "noop_pending": "false",
+    "pe_console": "puppet.angrydome.org",
+    "producer": "puppet.c.splunk-217321.internal",
+    "punct": "{\"\":\"\",\"\":\"----\",\"\":\"---..-.\",\"\":\"::-::;\",\"\":\"--\",",
+    "puppet_version": "6.4.1",
+    "report_format": "10",
+    "source": "http:puppet:summary",
+    "sourcetype": "puppet:summary",
+    "splunk_server": "splunk-dev.c.splunk-217321.internal",
+    "status": "unchanged",
+    "time": "2019-05-08T04:44:30.348Z",
+    "transaction_uuid": "2bd49f85-7811-4a2d-9ed5-0d3591966da7"
+  }
+}

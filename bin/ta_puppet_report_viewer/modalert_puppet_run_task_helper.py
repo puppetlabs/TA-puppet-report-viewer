@@ -1,6 +1,5 @@
+
 # encoding = utf-8
-import json
-from puppet_report_generation import run_report_generation
 
 def process_event(helper, *args, **kwargs):
     """
@@ -35,8 +34,17 @@ def process_event(helper, *args, **kwargs):
     helper.log_info("puppet_db_url={}".format(puppet_db_url))
 
     # The following example gets the alert action parameters and prints them to the log
-    transaction_uuid = helper.get_param("transaction_uuid")
-    helper.log_info("transaction_uuid={}".format(transaction_uuid))
+    bolt_target = helper.get_param("bolt_target")
+    helper.log_info("bolt_target={}".format(bolt_target))
+
+    task_name = helper.get_param("task_name")
+    helper.log_info("task_name={}".format(task_name))
+
+    task_parameters = helper.get_param("task_parameters")
+    helper.log_info("task_parameters={}".format(task_parameters))
+
+    puppet_environment = helper.get_param("puppet_environment")
+    helper.log_info("puppet_environment={}".format(puppet_environment))
 
 
     # The following example adds two sample events ("hello", "world")
@@ -57,31 +65,8 @@ def process_event(helper, *args, **kwargs):
     helper.log_info("server_uri={}".format(helper.settings["server_uri"]))
     [sample_code_macro:end]
     """
-    helper.log_info("Alert action Generate Detailed Report started.")
 
-    # Lets generate that dict we need
+    helper.log_info("Alert action puppet_run_task started.")
 
-    alert = {}
-    alert['global'] = {}
-    alert['param'] = {}
-    alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
-    alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
-    alert['global']['puppet_read_user_pass'] = helper.get_global_setting("puppet_read_user_pass")
-    alert['global']['splunk_hec_url'] = helper.get_global_setting("splunk_hec_url")
-    alert['global']['splunk_hec_token'] = helper.get_global_setting("splunk_hec_token")
-    alert['global']['puppet_action_hec_token'] = helper.get_global_setting("puppet_action_hec_token")
-    alert['global']['puppet_db_url'] = helper.get_global_setting("puppet_db_url")
-
-    alert['param']['transaction_uuid'] = helper.get_param("transaction_uuid")
-
-    events = helper.get_events()
-    
-    for event in events:
-        alert['result'] = event
-    
-    helper.log_info("Alert action data extracted and passed to run_report_generation.")
-    run_report_generation(alert)
-
-    helper.log_info("run_report_generation completed successfully.")
-
+    # TODO: Implement your alert action logic here
     return 0
