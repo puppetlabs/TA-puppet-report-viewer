@@ -10,23 +10,39 @@ from alert_actions_base import ModularAlertBase
 import modalert_puppet_run_task_helper
 
 class AlertActionWorkerpuppet_run_task(ModularAlertBase):
+
     def __init__(self, ta_name, alert_name):
         super(AlertActionWorkerpuppet_run_task, self).__init__(ta_name, alert_name)
 
-    def verify_global_setting(setting_name):
-        if not self.get_global_setting(setting_name):
-            self.log_error('{0} is a mandatory setup parameter, but its value is None.'.format(setting_name))
-            return False
-        return True
-
     def validate_params(self):
-        global_settings = ['puppet_enterprise_console', 'puppet_read_user', 'puppet_read_user_pass', 
-                           'splunk_hec_url', 'splunk_hec_token', 'bolt_target', 'task_name']
 
-        for setting_name in global_settings:
-            if not verify_global_setting(setting_name):
-                return False
-                
+        if not self.get_global_setting("puppet_enterprise_console"):
+            self.log_error('puppet_enterprise_console is a mandatory setup parameter, but its value is None.')
+            return False
+
+        if not self.get_global_setting("puppet_read_user"):
+            self.log_error('puppet_read_user is a mandatory setup parameter, but its value is None.')
+            return False
+
+        if not self.get_global_setting("puppet_read_user_pass"):
+            self.log_error('puppet_read_user_pass is a mandatory setup parameter, but its value is None.')
+            return False
+
+        if not self.get_global_setting("splunk_hec_url"):
+            self.log_error('splunk_hec_url is a mandatory setup parameter, but its value is None.')
+            return False
+
+        if not self.get_global_setting("splunk_hec_token"):
+            self.log_error('splunk_hec_token is a mandatory setup parameter, but its value is None.')
+            return False
+
+        if not self.get_param("bolt_target"):
+            self.log_error('bolt_target is a mandatory parameter, but its value is None.')
+            return False
+
+        if not self.get_param("task_name"):
+            self.log_error('task_name is a mandatory parameter, but its value is None.')
+            return False
         return True
 
     def process_event(self, *args, **kwargs):
