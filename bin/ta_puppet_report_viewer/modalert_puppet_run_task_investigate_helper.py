@@ -65,7 +65,7 @@ def process_event(helper, *args, **kwargs):
     [sample_code_macro:end]
     """
 
-    helper.log_info("Alert action puppet_run_task_investigate started.")
+    helper.log_info("Alert action puppet_run_task_custom=investigate started.")
 
     # TODO: Implement your alert action logic here
 
@@ -96,9 +96,8 @@ def process_event(helper, *args, **kwargs):
     for event in events:
         alert['result'] = event
 
-    helper.log_info("Alert action data extracted and passed to run_bolt_task_investigate.")
-    run_bolt_task_investigate(alert)
-
-    helper.log_info("run_bolt_task_investigate completed successfully.")
+    helper.log_info("Alert action data extracted and passed to run_bolt_task_custom=investigate.")
+    run_bolt_task_custom(alert)
+    helper.log_info("run_bolt_task_custom=investigate completed successfully.")
 
     return 0
