@@ -15,7 +15,7 @@
     "puppet_environment": "production",
     "task_name": "service::linux",
     "bolt_target": "debian-3.c.splunk-217321.internal",
-    "task_parameters": { "name": "ntpd", "action": "status"}
+    "task_parameters": "{ \"name\": \"ntpd\", \"action\": \"status\"}"
   },
   "result": {
     "_confstr": "source::http:puppet:summary|host::debian-3.c.splunk-217321.internal|puppet:summary",

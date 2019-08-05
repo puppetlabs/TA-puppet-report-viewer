@@ -71,17 +71,20 @@ def run_bolt_task(alert):
     message['transaction_uuid'] = alert['result']['transaction_uuid']
 
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
-  
+
   bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
   bolt_user_pass = alert['global']['bolt_user_pass'] or alert['global']['puppet_read_user_pass']
   auth_token = pie.rbac.genauthtoken(bolt_user,bolt_user_pass,'splunk report viewer',rbac_url)
+
+  # note: parameters is expected as a text string, not json, so in sample alert json must be represented as:
+  # "task_parameters": "{ \"name\": \"ntpd\", \"action\": \"status\"}"
 
   job = pie.bolt.reqtask(bolt_target,
                          task_name,
                          auth_token,
                          puppet_environment,
                          bolt_url,
-                         parameters=json.dumps(task_parameters))
+                         parameters=task_parameters)
 
   jobid = job['name']
   jobresults = pie.bolt.getjobresult(jobid, auth_token, bolt_url)
