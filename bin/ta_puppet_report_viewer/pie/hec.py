@@ -26,9 +26,11 @@ def post_report(detailed_report, hec_url, hec_token):
     'sourcetype': 'puppet:detailed',
     'event': detailed_report
   }
-  
 
-  requests.post(hec_url, json=report, headers=headers, verify=False)
+  try:
+    requests.post(hec_url, json=report, headers=headers, verify=False)
+  except Exception as e:
+    raise Exception("HEC Error: {0}".format(e))
 
 def post_action(message, host, hec_url, hec_token):
   # setup the headers
@@ -40,4 +42,7 @@ def post_action(message, host, hec_url, hec_token):
     'event': message
   }
 
-  requests.post(hec_url, json=event, headers=headers, verify=False)
+  try:
+    requests.post(hec_url, json=event, headers=headers, verify=False)
+  except Exception as e:
+    raise Exception("HEC Error: {0}".format(e))

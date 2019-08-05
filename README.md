@@ -95,6 +95,12 @@ curl -k 'https://<your.puppetdb.server>:8081/pdb/query/v4/nodes' -H "X-Authentic
 
 Diagnose issues with PE auth tokens following [PE access documentation](https://puppet.com/docs/pe/latest/managing_access.html).
 
+Alert actions:
+
+To check the logs of the individual alerts being run you can search the internal log index in splunk: `index=_internal sourcetype=splunkd component=sendmodalert` however not all error messages will show depending on the debug level of your installation.
+
+Individual alert actions log to the the Splunk folder on the system running the actions also, so one can see more verbose logs in `/opt/splunk/var/log/splunk`
+
 
 More information
 ----------------

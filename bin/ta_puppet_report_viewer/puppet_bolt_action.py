@@ -1,6 +1,7 @@
 # encoding = utf-8
 
 import pie
+import json
 
 # alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
 # alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
@@ -70,6 +71,7 @@ def run_bolt_task(alert):
     message['transaction_uuid'] = alert['result']['transaction_uuid']
 
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
+  
   bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
   bolt_user_pass = alert['global']['bolt_user_pass'] or alert['global']['puppet_read_user_pass']
   auth_token = pie.rbac.genauthtoken(bolt_user,bolt_user_pass,'splunk report viewer',rbac_url)
