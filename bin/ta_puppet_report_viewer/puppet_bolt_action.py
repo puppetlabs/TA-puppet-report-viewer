@@ -1,6 +1,7 @@
 # encoding = utf-8
 
 import pie
+import json
 
 # alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
 # alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
@@ -20,16 +21,22 @@ import pie
 #     alert['event'] = json.loads(event['_raw'])
 
 
-def run_bolt_task_investigate(alert):
+def run_bolt_task_custom(alert):
   # this just writes the alert with a proper task name and param
   # then passes it to the generic run_bolt_task function
 
-  task_name = 'investigate::{}'.format(alert['param']['bolt_investigate_name'])
+  if not alert['param']['task_type']:
+    raise Exception("No task type specified in the alert event")
+
+  task_type = alert['param']['task_type'] 
+  bolt_target = alert['param']["bolt_{0}_target".format(task_type)]
+  bolt_name = alert['param']["bolt_{0}_name".format(task_type)]
+  task_name = '{0}::{1}'.format(task_type, bolt_name)
 
   # these are the values created by our generic modalert for tasks
   alert['param']['task_name'] = task_name
   alert['param']['task_parameters'] = {}
-  alert['param']['bolt_target'] = alert['param']['bolt_investigate_target']
+  alert['param']['bolt_target'] = bolt_target
 
   # hardcoding to production for Investigate module
   alert['param']['puppet_environment'] = 'production'
@@ -49,6 +56,7 @@ def run_bolt_task(alert):
   puppet_action_hec_token = alert['global']['puppet_action_hec_token'] or alert['global']['splunk_hec_token']
   bolt_target = alert['param']['bolt_target']
   task_name = alert['param']['task_name']
+  task_parameters = alert['param']['task_parameters']
 
   message = {
     'message': 'Running task {} on {} '.format(task_name,bolt_target),
@@ -63,15 +71,20 @@ def run_bolt_task(alert):
     message['transaction_uuid'] = alert['result']['transaction_uuid']
 
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
+
   bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
   bolt_user_pass = alert['global']['bolt_user_pass'] or alert['global']['puppet_read_user_pass']
   auth_token = pie.rbac.genauthtoken(bolt_user,bolt_user_pass,'splunk report viewer',rbac_url)
+
+  # note: parameters is expected as a text string, not json, so in sample alert json must be represented as:
+  # "task_parameters": "{ \"name\": \"ntpd\", \"action\": \"status\"}"
 
   job = pie.bolt.reqtask(bolt_target,
                          task_name,
                          auth_token,
                          puppet_environment,
-                         bolt_url)
+                         bolt_url,
+                         parameters=task_parameters)
 
   jobid = job['name']
   jobresults = pie.bolt.getjobresult(jobid, auth_token, bolt_url)
@@ -96,8 +109,6 @@ def run_bolt_task(alert):
 
     pie.hec.post_action(rmessage, result['name'], splunk_hec_url, puppet_action_hec_token)
 
-
-
 # this is our interactive load option
 # assumes you're running this library directly from the command line
 # cat example_alert.json | python $thisfile.py
@@ -107,4 +118,7 @@ if __name__ == "__main__":
   import json
 
   alert = json.load(sys.stdin)
-  run_bolt_task_investigate(alert)
+  try:
+    run_bolt_task_custom(alert)
+  except KeyError:
+    run_bolt_task(alert)
