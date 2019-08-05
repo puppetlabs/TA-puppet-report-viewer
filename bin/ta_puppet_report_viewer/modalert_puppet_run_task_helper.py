@@ -1,6 +1,8 @@
 
 # encoding = utf-8
 
+from puppet_bolt_action import run_bolt_task
+
 def process_event(helper, *args, **kwargs):
     """
     # IMPORTANT

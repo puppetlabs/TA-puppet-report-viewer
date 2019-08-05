@@ -2,7 +2,7 @@
 # encoding = utf-8
 
 import json
-from puppet_bolt_action import run_bolt_task_investigate
+from puppet_bolt_action import run_bolt_task_custom
 
 def process_event(helper, *args, **kwargs):
     """
