@@ -1,0 +1,59 @@
+<form script="overview.js" theme="light">
+  <label>Alert Actions</label>
+  <description>This page includes results of alert actions run by this plugin and a view into internal logs of Splunk to debug those actions</description>
+  <fieldset submitButton="false">
+    <input type="time" token="boltTimeRange" searchWhenChanged="true">
+      <label>Time range:</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Alert actions responses (if successfully run)</title>
+      <table>
+        <search>
+          <query>`puppet_actions_index` sourcetype="puppet:action" | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | table Time host action_name action_state joburl message</query>
+          <earliest>$boltTimeRange.earliest$</earliest>
+          <latest>$boltTimeRange.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">preview</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Splunk modalert generate detailed report logs</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=sendmodalert action="generate_detailed_report" | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | rename event_message as "Event" | table Time splunk_server Event</query>
+          <earliest>$boltTimeRange.earliest$</earliest>
+          <latest>$boltTimeRange.latest$</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">preview</option>
+        <option name="wrap">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Splunk modalert Tasks (investigate, act, etc) logs</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=sendmodalert (action="puppet_run_task_investigate" OR action="puppet_run_task" OR action="puppet_run_task_act") | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | rename event_message as "Event" | rename action as Action | table Time Action splunk_server Event</query>
+          <earliest>$boltTimeRange.earliest$</earliest>
+          <latest>$boltTimeRange.latest$</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">preview</option>
+        <option name="wrap">false</option>
+      </table>
+    </panel>
+  </row>
+</form>

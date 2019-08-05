@@ -9,7 +9,11 @@
 <view name="hosts_with_failures" />
 <view name="hosts_with_corrective_changes" />
 </collection>
-<view name="bolt" label="Bolt"/>
+<collection label="Actions">
+<view name="alert_actions" label="Alert Actions"/>
+<view name="bolt_actions" label="Bolt Actions"/>
+</collection>
+<view name="metrics" label="Metrics" />
 <view name="configuration" label="Configuration" />
 <view name="alerts" label="Alerts" />
 <view name="search" label="Search"/>
