@@ -1,5 +1,5 @@
 <form script="overview.js" theme="light">
-  <label>Bolt</label>
+  <label>Bolt Actions</label>
   <fieldset submitButton="false">
     <input type="time" token="boltTimeRange" searchWhenChanged="true">
       <label>Time range:</label>
