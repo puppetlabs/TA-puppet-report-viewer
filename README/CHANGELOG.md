@@ -1,6 +1,23 @@
 Release Notes
 ==============
 
+2.0.0:
+New Features:
+- Built in support for running Bolt Tasks in Puppet Enterprise from Splunk
+- Metrics tab to show PE metric data if metrics are configured
+- Actions Tab in dashboard added to show logs and status of any of this applications alert actions for debugging or auditing
+- Support for Puppet Username/Password instead of auth token
+- All searches support per sourcetype indexes
+
+Breaking Changes:
+- *alert actions will fail until Puppet Username is provided instead of PE auth token*
+- *full URIs are now required instead of just hostnames* adds more flexibility the authorization methods (http support and custom ports) but you will need to redo your app configuration before alert actions resume functioning
+- Searches defaulting to main and not using the index macros will stop updating if you move the corressponding puppet data to an index but don't change the search
+
+Fixes:
+- Alert actions work with custom parameters
+- Before there was no way to see if your alerts were working easily, now they publish information to the puppet:action sourcetype
+
 1.5.1:
 New Features:
 - Full dashboard updates
