@@ -16,5 +16,7 @@ def getendpoints (uri, useproxy=False):
   endpoints['rbac'] = 'https://{}:{}/{}'.format(hostname,(baseport or '4433'),'rbac-api/v1')
   endpoints['pdb'] = 'https://{}:{}/{}'.format(hostname,(baseport or '8081'),'pdb/query/v4')
   endpoints['bolt'] = 'https://{}:{}/{}'.format(hostname,(baseport or '8143'),'orchestrator/v1')
+  endpoints['console'] = 'https://{}'.format(hostname)
+  endpoints['console_hostname'] = hostname
 
   return endpoints

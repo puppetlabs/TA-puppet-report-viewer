@@ -1,5 +1,6 @@
 # encoding = utf-8
 import pie
+import collections
 
 # alert['global']['puppet_enterprise_console'] = helper.get_global_setting("puppet_enterprise_console")
 # alert['global']['puppet_read_user'] = helper.get_global_setting("puppet_read_user")
@@ -53,6 +54,13 @@ def build_report_query(uuid):
 
   return query_string
 
+def parse_metrics(report_metrics):
+  mdict = collections.defaultdict(dict)
+
+  for m in report_metrics['data']:
+    mdict[m['category']][m['name']] = m['value']
+    
+  return dict(mdict)
 
 def run_report_generation(alert):
 
@@ -87,7 +95,19 @@ def run_report_generation(alert):
   try:
     detailed_report = pie.pdb.query(pql, pdb_url, auth_token)[0]
   except Exception as e:
-    raise Exception("Puppet DB query {0} returned no results".format(pql))
+    raise Exception("Puppet DB query {0} returned no results: error = {}".format(pql, e))
+  
+  # add URL to the detailed report
+  # https://puppet.angrydome.org/#/inspect/report/1261440031c1b59f8238cfbdaaefc7dabb4e3ddb/events
+
+  pe_console = endpoints['console_hostname']
+  repo_hash = detailed_report['hash']
+  detailed_report['url'] = 'https://{}/#/inspect/report/{}/events'.format(pe_console,repo_hash)
+  detailed_report['pe_console'] = pe_console
+
+  parsed_metrics = parse_metrics(detailed_report['metrics'])
+
+  detailed_report['metrics'] = parsed_metrics
 
   splunk_hec_token = alert['global']['splunk_hec_token']
   
