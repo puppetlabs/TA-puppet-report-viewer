@@ -4,7 +4,7 @@
         "name": "TA-puppet-report-viewer", 
         "displayName": "Puppet Report Viewer", 
         "restRoot": "TA_puppet_report_viewer", 
-        "version": "1.5.1"
+        "version": "2.0.0"
     }, 
     "pages": {
         "configuration": {
