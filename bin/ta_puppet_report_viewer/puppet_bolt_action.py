@@ -47,8 +47,7 @@ def run_bolt_task(alert):
   # load our URLs, we generate possible ones assuming the console hostname is valid
   # however if a user provides their own pdb or bolt url it goes here
   # this also allows for us to add an int_proxy feature in the future
-  pe_console = alert['global']['puppet_enterprise_console']
-  endpoints = pie.util.getendpoints(pe_console)
+  endpoints = pie.util.getendpoints(alert['global']['puppet_enterprise_console'])
   rbac_url = endpoints['rbac']
   bolt_url = alert['global']['puppet_bolt_server'] or endpoints['bolt']
   puppet_environment = alert['param']['puppet_environment']
@@ -57,13 +56,16 @@ def run_bolt_task(alert):
   bolt_target = alert['param']['bolt_target']
   task_name = alert['param']['task_name']
   task_parameters = alert['param']['task_parameters']
+  pe_console = endpoints['console_hostname']
 
   message = {
     'message': 'Running task {} on {} '.format(task_name,bolt_target),
     'action_type': 'task',
     'action_name': task_name,
+    'action_parameters': task_parameters,
     'action_state': 'starting',
     'alert_event': alert['result'],
+    'pe_console': pe_console,
   }
 
   # if this happens to be a puppet run causing this task to be fired
@@ -93,7 +95,7 @@ def run_bolt_task(alert):
   for result in jobresults['items']:
     rmessage = message
     rmessage['action_state'] = result['state']
-    rmessage['joburl'] = '{}/#/run/jobs/{}'.format(pe_console,jobid)
+    rmessage['joburl'] = 'https://{}/#/run/jobs/{}'.format(pe_console,jobid)
     rmessage['result'] = result['result']
     rmessage['transaction_uuid'] = result['transaction_uuid'] or message['transaction_uuid']
     rmessage['start_timestamp'] = result['start_timestamp']

@@ -14,7 +14,7 @@
 <view name="bolt_actions" label="Bolt Actions"/>
 </collection>
 <view name="metrics" label="Metrics" />
-<view name="configuration" label="Configuration" />
 <view name="alerts" label="Alerts" />
 <view name="search" label="Search"/>
+<view name="configuration" label="Configuration" />
 </nav>
