@@ -2,17 +2,18 @@ Release Notes
 ==============
 
 2.0.0:
+**Breaking Changes**:
+- The alert action named `Generate detailed report` has been renamed `Generate a detailed Puppet report` to make it more specific. The internal name of the action has been renamed to `puppet_generate_detailed_report` from `generate_detailed_report` to prevent confusion with out alert actions and to ensure consistency with other. You will need to update existing searches using this action to use the new name, but no other changes to the searches is required.
+- *alert actions will fail until Puppet Username is provided instead of PE auth token*
+- *full URIs are now required instead of just hostnames* adds more flexibility the authorization methods (http support and custom ports) but you will need to redo your app configuration before alert actions resume functioning
+- Searches defaulting to main and not using the index macros will stop updating if you move the corressponding puppet data to an index but don't change the search
+
 New Features:
 - Built in support for running Bolt Tasks in Puppet Enterprise from Splunk
 - Metrics tab to show PE metric data if metrics are configured
 - Actions Tab in dashboard added to show logs and status of any of this applications alert actions for debugging or auditing
 - Support for Puppet Username/Password instead of auth token
 - All searches support per sourcetype indexes
-
-Breaking Changes:
-- *alert actions will fail until Puppet Username is provided instead of PE auth token*
-- *full URIs are now required instead of just hostnames* adds more flexibility the authorization methods (http support and custom ports) but you will need to redo your app configuration before alert actions resume functioning
-- Searches defaulting to main and not using the index macros will stop updating if you move the corressponding puppet data to an index but don't change the search
 
 Fixes:
 - Alert actions work with custom parameters

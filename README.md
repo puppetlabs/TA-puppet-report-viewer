@@ -72,7 +72,9 @@ This is an example query: `index=* sourcetype=puppet:summary`
 
 If `puppet:detailed` sourcetype's are not showing up in search, that means that the Detailed Report Generator Alert is not configured or running properly. The app includes an alert that is disabled, but will trigger the alert as needed for any summary report that is submitted that isn't a normal, no change, puppet report. If this alert is enabled, and the setup screen has values in it, one can view the logs with the following Splunk search:
 
-`index=_internal sourcetype=splunkd component=sendmodalert action="generate_detailed_report"`
+`index=_internal sourcetype=splunkd component=sendmodalert (action="puppet_run_task_investigate" OR action="puppet_run_task" OR action="puppet_run_task_act" OR action="puppet_generate_detailed_report")`
+
+There is also a view into the alert actions logs themselves (which are published to the HEC) under the Actions menu in the Splunk app that shows these searches as well.
 
 If there are no error messages, then verify that the HEC token supplied works and can be used to submit an example report properly, runnging this command from a unix or command line will submit a dummy puppet:detailed event (such as a Splunk server):
 

@@ -65,7 +65,6 @@ def run_bolt_task(alert):
     'action_parameters': task_parameters,
     'action_state': 'starting',
     'alert_event': alert['result'],
-    'pe_console': pe_console,
   }
 
   # if this happens to be a puppet run causing this task to be fired
@@ -96,6 +95,7 @@ def run_bolt_task(alert):
     rmessage = message
     rmessage['action_state'] = result['state']
     rmessage['joburl'] = 'https://{}/#/run/jobs/{}'.format(pe_console,jobid)
+    rmessage['pe_console'] = pe_console
     rmessage['result'] = result['result']
     rmessage['transaction_uuid'] = result['transaction_uuid'] or message['transaction_uuid']
     rmessage['start_timestamp'] = result['start_timestamp']

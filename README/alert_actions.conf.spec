@@ -1,6 +1,5 @@
 
-[generate_detailed_report]
-param.transaction_uuid = <string> Transaction UUID.
+[puppet_generate_detailed_report]
 
 [puppet_run_task_investigate]
 param.bolt_investigate_name = <list> Investigate. It's a required parameter. It's default value is lastlogin.
