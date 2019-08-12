@@ -73,12 +73,14 @@ def run_report_generation(alert):
   endpoints = pie.util.getendpoints(alert['global']['puppet_enterprise_console'])
   rbac_url = endpoints['rbac']
   pdb_url = alert['global']['puppet_db_url'] or endpoints['pdb']
+  pe_console = endpoints['console_hostname']
 
   splunk_hec_url = alert['global']['splunk_hec_url']
   puppet_action_hec_token = alert['global']['puppet_action_hec_token'] or alert['global']['splunk_hec_token']
 
   message = {
     'message': 'Looking up detailed report for run: {}'.format(transaction_uuid),
+    'pe_console': pe_console,
     'transaction_uuid': transaction_uuid,
   }
 
@@ -100,7 +102,6 @@ def run_report_generation(alert):
   # add URL to the detailed report
   # https://puppet.angrydome.org/#/inspect/report/1261440031c1b59f8238cfbdaaefc7dabb4e3ddb/events
 
-  pe_console = endpoints['console_hostname']
   repo_hash = detailed_report['hash']
   detailed_report['url'] = 'https://{}/#/inspect/report/{}/events'.format(pe_console,repo_hash)
   detailed_report['pe_console'] = pe_console

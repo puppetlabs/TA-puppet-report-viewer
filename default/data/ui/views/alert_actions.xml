@@ -30,7 +30,7 @@
       <title>Splunk modalert generate detailed report logs</title>
       <table>
         <search>
-          <query>index=_internal sourcetype=splunkd component=sendmodalert action="generate_detailed_report" | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | rename event_message as "Event" | table Time splunk_server Event</query>
+          <query>index=_internal sourcetype=splunkd component=sendmodalert action="puppet_generate_detailed_report" | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | rename event_message as "Event" | table Time splunk_server Event</query>
           <earliest>$boltTimeRange.earliest$</earliest>
           <latest>$boltTimeRange.latest$</latest>
         </search>

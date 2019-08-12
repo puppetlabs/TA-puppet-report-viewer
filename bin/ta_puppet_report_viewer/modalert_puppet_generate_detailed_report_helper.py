@@ -1,3 +1,4 @@
+
 # encoding = utf-8
 import json
 from puppet_report_generation import run_report_generation
@@ -34,11 +35,6 @@ def process_event(helper, *args, **kwargs):
     puppet_db_url = helper.get_global_setting("puppet_db_url")
     helper.log_info("puppet_db_url={}".format(puppet_db_url))
 
-    # The following example gets the alert action parameters and prints them to the log
-    transaction_uuid = helper.get_param("transaction_uuid")
-    helper.log_info("transaction_uuid={}".format(transaction_uuid))
-
-
     # The following example adds two sample events ("hello", "world")
     # and writes them to Splunk
     # NOTE: Call helper.writeevents() only once after all events
@@ -57,7 +53,8 @@ def process_event(helper, *args, **kwargs):
     helper.log_info("server_uri={}".format(helper.settings["server_uri"]))
     [sample_code_macro:end]
     """
-    helper.log_info("Alert action Generate Detailed Report started.")
+
+    helper.log_info("Alert action puppet_generate_detailed_report started.")
 
     # Lets generate that dict we need
 
@@ -84,4 +81,5 @@ def process_event(helper, *args, **kwargs):
 
     helper.log_info("run_report_generation completed successfully.")
 
+    # TODO: Implement your alert action logic here
     return 0

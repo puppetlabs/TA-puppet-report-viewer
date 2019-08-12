@@ -48,7 +48,7 @@ fields_additional_parameters = [
         'splunk_hec_url',
         required=True,
         encrypted=False,
-        default='https://splunk.company.coml:8088/services/collector',
+        default='https://splunk.company.com:8088/services/collector',
         validator=validator.String(
             max_len=8192, 
             min_len=0, 
