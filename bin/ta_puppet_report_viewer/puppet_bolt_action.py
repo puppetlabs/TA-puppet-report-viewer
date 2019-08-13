@@ -70,11 +70,20 @@ def run_bolt_task(alert):
   # if this happens to be a puppet run causing this task to be fired
   if alert['result']['transaction_uuid']:
     message['transaction_uuid'] = alert['result']['transaction_uuid']
+  
+  try:
+    json.loads(task_parameters)
+  except ValueError as json_parse_error:
+    message['action_state'] = 'failed'
+    message['message'] = 'Failed to run task {} on {}, parameters not vaid json: {}'.format(task_name,bolt_target,json_parse_error)
+    pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
+    raise ValueError("Tasks parameters aren't in json format: {}".format(json_parse_error))
 
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
 
   bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
   bolt_user_pass = alert['global']['bolt_user_pass'] or alert['global']['puppet_read_user_pass']
+  task_timeout = alert['param']['timeout'] or 120
   auth_token = pie.rbac.genauthtoken(bolt_user,bolt_user_pass,'splunk report viewer',rbac_url)
 
   # note: parameters is expected as a text string, not json, so in sample alert json must be represented as:
@@ -88,7 +97,7 @@ def run_bolt_task(alert):
                          parameters=task_parameters)
 
   jobid = job['name']
-  jobresults = pie.bolt.getjobresult(jobid, auth_token, bolt_url)
+  jobresults = pie.bolt.getjobresult(jobid, auth_token, bolt_url, timeout=task_timeout)
 
   # right now we're only running tasks against a single target, but may have things in the future returing multiple nodes
   for result in jobresults['items']:

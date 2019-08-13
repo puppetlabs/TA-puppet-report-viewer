@@ -76,7 +76,7 @@ def getjobstate(joburl, token):
 # Get a Job Result
 # Given a job id, loop over getjobstate() until complete
 # or timeout is exceeded
-def getjobresult(job, token, url, wait=2, timeout=30):
+def getjobresult(job, token, url, wait=10, timeout=360):
   joburl = '{}/jobs/{}'.format(url,job)
 
   runtime = 0
@@ -90,7 +90,7 @@ def getjobresult(job, token, url, wait=2, timeout=30):
     runtime += wait
 
   # we should only get here because of timeout
-  raise ValueError('Timeout execeeded waiting for:', job, runtime)
+  raise ValueError('Timeout execeeded waiting for: {} timeout: {} seconds'.format(joburl, timeout))
 
 # Get Job Report
 # This includes the full run details and the metadata / results of any task written
