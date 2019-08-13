@@ -71,19 +71,11 @@ def run_bolt_task(alert):
   if alert['result']['transaction_uuid']:
     message['transaction_uuid'] = alert['result']['transaction_uuid']
   
-  try:
-    json.loads(task_parameters)
-  except ValueError as json_parse_error:
-    message['action_state'] = 'failed'
-    message['message'] = 'Failed to run task {} on {}, parameters not vaid json: {}'.format(task_name,bolt_target,json_parse_error)
-    pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
-    raise ValueError("Tasks parameters aren't in json format: {}".format(json_parse_error))
-
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
 
   bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
   bolt_user_pass = alert['global']['bolt_user_pass'] or alert['global']['puppet_read_user_pass']
-  task_timeout = alert['param']['timeout'] or 120
+  task_timeout = alert['param']['task_timeout'] or 360
   auth_token = pie.rbac.genauthtoken(bolt_user,bolt_user_pass,'splunk report viewer',rbac_url)
 
   # note: parameters is expected as a text string, not json, so in sample alert json must be represented as:

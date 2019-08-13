@@ -78,10 +78,10 @@ def getjobstate(joburl, token):
 # or timeout is exceeded
 def getjobresult(job, token, url, wait=10, timeout=360):
   joburl = '{}/jobs/{}'.format(url,job)
-
+  task_timeout = int(timeout)
   runtime = 0
   completed = ['stopped', 'finished', 'failed']
-  while runtime <= timeout:
+  while runtime < task_timeout:
     if getjobstate(joburl, token) in completed:
       result = getjobreport(job, token, url)
       return result
