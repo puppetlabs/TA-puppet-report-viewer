@@ -71,14 +71,6 @@ def run_bolt_task(alert):
   if alert['result']['transaction_uuid']:
     message['transaction_uuid'] = alert['result']['transaction_uuid']
   
-  try:
-    json.loads(task_parameters)
-  except ValueError as json_parse_error:
-    message['action_state'] = 'failed'
-    message['message'] = 'Failed to run task {} on {}, parameters not vaid json: {}'.format(task_name,bolt_target,json_parse_error)
-    pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
-    raise ValueError("Tasks parameters aren't in json format: {}".format(json_parse_error))
-
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
 
   bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
