@@ -1,6 +1,6 @@
 <form>
   <label>Report Builder</label>
-  <description>This dashboard shows you have to filter for reports based on inventory data and report status, use this to generate searches you can save in other reports or dashboards as you see fit</description>
+  <description>This dashboard shows you how to filter for Puppet reports based on inventory data and report status. Use this to generate searches you can save in other reports, dashboards or as alerts.</description>
   <fieldset submitButton="false" autoRun="true">
     <input type="time" token="reportsTime" searchWhenChanged="true">
       <label>Time Range</label>
