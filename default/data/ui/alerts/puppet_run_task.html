@@ -19,7 +19,7 @@
     <div class="controls">
 	<input type="text" name="action.puppet_run_task.param.task_parameters" id="puppet_run_task_task_parameters"/>
                 <span class="help-block"> 
-                    Provide parameters as unescaped json: {"name" : "ntpd", "action": "status"}
+                    Additional parameters to pass to Bolt Task along with alert contents
                 </span>
     </div>
 </div>
@@ -29,6 +29,15 @@
 	<input type="text" name="action.puppet_run_task.param.puppet_environment" id="puppet_run_task_puppet_environment"/>
                 <span class="help-block"> 
                     Puppet environment where task resides
+                </span>
+    </div>
+</div>
+<div class="control-group">
+	<label class="control-label" for="puppet_run_task_global_override">Global Override  </label>
+    <div class="controls">
+	<input type="text" name="action.puppet_run_task.param.global_override" id="puppet_run_task_global_override"/>
+                <span class="help-block"> 
+                    Allows for the customisation of global parameters for this task run. Requires unescaped json format
                 </span>
     </div>
 </div>
