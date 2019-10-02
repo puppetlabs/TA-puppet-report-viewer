@@ -90,7 +90,12 @@ def process_event(helper, *args, **kwargs):
     alert['param']['bolt_investigate_target'] = helper.get_param("bolt_investigate_target")
     alert['param']['bolt_investigate_name'] = helper.get_param("bolt_investigate_name")
     alert['param']['task_type'] = 'investigate'
-    
+    alert['param']['global_override'] = helper.get_param("global_override")
+
+    # Checks for a global overrides parameter and overrides any keys it finds
+    global_override = json.loads(alert['param']['global_override'])
+    for keyname, value in global_override.items():
+      alert['global'][keyname] = value
 
     events = helper.get_events()
     for event in events:

@@ -70,6 +70,12 @@ def process_event(helper, *args, **kwargs):
     alert['global']['puppet_db_url'] = helper.get_global_setting("puppet_db_url")
 
     alert['param']['transaction_uuid'] = helper.get_param("transaction_uuid")
+    alert['param']['global_override'] = helper.get_param("global_override")
+
+    # Checks for a global overrides parameter and overrides any keys it finds
+    global_override = json.loads(alert['param']['global_override'])
+    for keyname, value in global_override.items():
+      alert['global'][keyname] = value
 
     events = helper.get_events()
     

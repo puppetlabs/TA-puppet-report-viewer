@@ -1,6 +1,6 @@
 
 # encoding = utf-8
-
+import json
 from puppet_bolt_action import run_bolt_task
 
 def process_event(helper, *args, **kwargs):
@@ -91,6 +91,13 @@ def process_event(helper, *args, **kwargs):
     alert['param']['task_parameters'] = helper.get_param("task_parameters")
     alert['param']['puppet_environment'] = helper.get_param("puppet_environment")
     alert['param']['task_timeout'] = helper.get_param("task_timeout")
+
+    alert['param']['global_override'] = helper.get_param("global_override")
+
+    # Checks for a global overrides parameter and overrides any keys it finds
+    global_override = json.loads(alert['param']['global_override'])
+    for keyname, value in global_override.items():
+      alert['global'][keyname] = value
     
     events = helper.get_events()
     for event in events:
