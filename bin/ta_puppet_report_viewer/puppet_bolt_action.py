@@ -35,7 +35,7 @@ def run_bolt_task_custom(alert):
 
   # these are the values created by our generic modalert for tasks
   alert['param']['task_name'] = task_name
-  alert['param']['task_parameters'] = {}
+  alert['param']['task_parameters'] = '{}'
   alert['param']['bolt_target'] = bolt_target
 
   # hardcoding to production for Investigate module
@@ -55,7 +55,17 @@ def run_bolt_task(alert):
   puppet_action_hec_token = alert['global']['puppet_action_hec_token'] or alert['global']['splunk_hec_token']
   bolt_target = alert['param']['bolt_target']
   task_name = alert['param']['task_name']
-  task_parameters = alert['param']['task_parameters']
+  task_parameters = '{}'
+
+  if 'task_parameters' in alert['param'].keys():
+    try:
+      json_task_parameters = json.loads(alert['param']['task_parameters'])
+      task_parameters = json.dumps(json_task_parameters)
+    except:
+      error_string = 'Task {} on host {} uninstigated - Task Parameters must be in a correct JSON format, please check this and try again'.format(task_name,bolt_target)
+      pie.hec.post_action(error_string, bolt_target, splunk_hec_url, puppet_action_hec_token)
+      raise SystemExit(error_string)
+
   pe_console = endpoints['console_hostname']
 
   message = {
@@ -70,11 +80,12 @@ def run_bolt_task(alert):
   # if this happens to be a puppet run causing this task to be fired
   if alert['result']['transaction_uuid']:
     message['transaction_uuid'] = alert['result']['transaction_uuid']
-
+  
   pie.hec.post_action(message, bolt_target, splunk_hec_url, puppet_action_hec_token)
 
   bolt_user = alert['global']['bolt_user'] or alert['global']['puppet_read_user']
   bolt_user_pass = alert['global']['bolt_user_pass'] or alert['global']['puppet_read_user_pass']
+  task_timeout = alert['param']['task_timeout'] or 360
   auth_token = pie.rbac.genauthtoken(bolt_user,bolt_user_pass,'splunk report viewer',rbac_url)
 
   # note: parameters is expected as a text string, not json, so in sample alert json must be represented as:
@@ -88,7 +99,7 @@ def run_bolt_task(alert):
                          parameters=task_parameters)
 
   jobid = job['name']
-  jobresults = pie.bolt.getjobresult(jobid, auth_token, bolt_url)
+  jobresults = pie.bolt.getjobresult(jobid, auth_token, bolt_url, timeout=task_timeout)
 
   # right now we're only running tasks against a single target, but may have things in the future returing multiple nodes
   for result in jobresults['items']:

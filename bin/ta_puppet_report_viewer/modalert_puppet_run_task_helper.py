@@ -90,6 +90,8 @@ def process_event(helper, *args, **kwargs):
     alert['param']['task_name'] = helper.get_param("task_name")
     alert['param']['task_parameters'] = helper.get_param("task_parameters")
     alert['param']['puppet_environment'] = helper.get_param("puppet_environment")
+    alert['param']['task_timeout'] = helper.get_param("task_timeout")
+
     alert['param']['global_override'] = helper.get_param("global_override")
 
     # Checks for a global overrides parameter and overrides any keys it finds
