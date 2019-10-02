@@ -35,7 +35,7 @@ def run_bolt_task_custom(alert):
 
   # these are the values created by our generic modalert for tasks
   alert['param']['task_name'] = task_name
-  alert['param']['task_parameters'] = {}
+  alert['param']['task_parameters'] = '{}'
   alert['param']['bolt_target'] = bolt_target
 
   # hardcoding to production for Investigate module
@@ -55,7 +55,17 @@ def run_bolt_task(alert):
   puppet_action_hec_token = alert['global']['puppet_action_hec_token'] or alert['global']['splunk_hec_token']
   bolt_target = alert['param']['bolt_target']
   task_name = alert['param']['task_name']
-  task_parameters = alert['param']['task_parameters']
+  task_parameters = '{}'
+
+  if 'task_parameters' in alert['param'].keys():
+    try:
+      json_task_parameters = json.loads(alert['param']['task_parameters'])
+      task_parameters = json.dumps(json_task_parameters)
+    except:
+      error_string = 'Task {} on host {} uninstigated - Task Parameters must be in a correct JSON format, please check this and try again'.format(task_name,bolt_target)
+      pie.hec.post_action(error_string, bolt_target, splunk_hec_url, puppet_action_hec_token)
+      raise SystemExit(error_string)
+
   pe_console = endpoints['console_hostname']
 
   message = {
