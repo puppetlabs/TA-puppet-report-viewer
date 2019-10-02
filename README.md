@@ -10,6 +10,7 @@ The steps to get this addon working are:
 1. Install the Puppet Report Viewer addon
 2. Create atleast one HEC input (puppet:summary)
 3. Install `splunk_hec` module in Puppet environment and configure with the HEC token and Splunk Server
+4. For the main page to update with inventory after version 2.0, you will also need to send puppet:facts information (inventory) to Splunk, see the Splunk_hec documentation on configuring fact support
 
 Once configured, the overview page will start showing Puppet run report status, and information about changes over various windows of time. The views can be customized, updated, modified to suit your needs.
 
@@ -18,12 +19,9 @@ Once configured, the overview page will start showing Puppet run report status, 
 For detailed report generation, a feature for Puppet Enterprise Users, there are additional steps one can perform, that first require configuration the AddOn with the appropriate credentials to talk to PuppetDB and to submit events to Splunk:
 
 1. Create puppet:detailed HEC input
-2. Create a Splunk [user and role](https://puppet.com/docs/pe/latest/rbac_user_roles_intro.html#create-a-new-user-role) in the Puppet Enterprise console, with the permission to "View node data from PuppetDB" under the Nodes Type
-3. Configure Puppet Enterprise to support long life [authentication tokens](https://puppet.com/docs/pe/latest/rbac_token_auth_intro.html#change-the-token-s-default-lifetime)
-4. Generate an authentication token (example command) : `curl -k -X POST -H 'Content-Type: application/json' 
- -d '{"login": "splunk", "password": "password", "lifetime": "1y"}' https://localhost:4433/rbac-api/v1/auth/token`
-5. On the configuration page of the addon provide the hostname of the PuppetDB server & auth token, along with the hostname of the Splunk instace running the HEC along with the puppet:detailed HEC token (this is important to use the puppet:detailed token and sourcetype, otherwise it is possible to create an alert action that continually calls itself)
-6. With the addon configured, perform a search for a specific event (such as a puppet run with a failed or changed status) `sourcetype="puppet:summary"| spath status | search status=failed` save it as an alert, and assign the action "Generate detailed report" from the action menu. No configuration of the action is needed.
+2. Create a Splunk [user and role](https://puppet.com/docs/pe/latest/rbac_user_roles_intro.html#create-a-new-user-role) in the Puppet Enterprise console, with the permission to "View node data from PuppetDB" under the Nodes Type, if you wish to run Bolt tasks with the this same user for via the Tasks Alert Actions integration, add those permissions here
+3. On the configuration page of the addon provide the URL of the Puppet Enterprise Console, the Username and Password of the Splunk user you just created, the URL to the HEC collector, and the HEC token. The other options are for more advanced configurations.
+4. With the addon configured, perform a search for a specific event (such as a puppet run with a failed or changed status) `sourcetype="puppet:summary"| spath status | search status=failed` save it as an alert, and assign the action "Generate detailed report" from the action menu. No configuration of the action is needed.
 
 ![Addon Configuration Screen](https://raw.githubusercontent.com/puppetlabs/TA-puppet-report-viewer/master/README/img/configuration.png)
 
