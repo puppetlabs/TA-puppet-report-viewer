@@ -213,7 +213,7 @@
         </html>
       <single>
         <search>
-          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ | stats count(metrics.changes.total)</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | dedup certname | stats sum(metrics.resources.total)</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
