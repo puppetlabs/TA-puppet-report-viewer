@@ -213,7 +213,7 @@
         </html>
       <single>
         <search>
-          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ | stats count(metrics.changes.total)</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | dedup certname | stats sum(metrics.resources.total)</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
@@ -295,7 +295,7 @@
       <table depends="$title5$">
         <title></title>
         <search>
-          <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | stats count(metrics.changes.total) by host | rename host as Host count(metrics.changes.total) as Total</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | stats sum(metrics.resources.total) by host | rename host as Host sum(metrics.resources.total) as Total</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
