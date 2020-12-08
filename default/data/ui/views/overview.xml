@@ -29,7 +29,7 @@
     <panel>
       <title></title>
       <html>
-        <b>Managed Hosts by Environment</b>                                                                    <button class="btn" align="right" data-unset-token="title1">X</button>
+        <b>Managed Hosts by Environment</b>
         </html>
       <single>
         <search>
@@ -68,7 +68,7 @@
     <panel>
       <title></title>
       <html>
-        <b>Hosts with corrective changes</b>                                                                    <button class="btn" align="right" data-unset-token="title2">X</button>
+        <b>Hosts with corrective changes</b>
         </html>
       <single>
         <search>
@@ -101,7 +101,7 @@
     <panel>
       <title></title>
       <html>
-        <b>Hosts with failures</b>                                                                    <button class="btn" align="right" data-unset-token="title3">X</button>
+        <b>Hosts with failures</b>
         </html>
       <single>
         <search>
@@ -213,7 +213,7 @@
         </html>
       <single>
         <search>
-          <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ | stats count(metrics.changes.total)</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | dedup certname | stats sum(metrics.resources.total)</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
@@ -232,7 +232,7 @@
     <panel>
       <title></title>
       <html>
-        <b>All reports</b>                                                                        <button class="btn" align="right" data-unset-token="title6">X</button>
+        <b>All reports</b>
         </html>
       <single>
         <search>
@@ -255,7 +255,7 @@
     <panel>
       <title></title>
       <html>
-        <b>Average Compilation Times</b>                                                                        <button class="btn" align="right" data-unset-token="title4">X</button>
+        <b>Average Compilation Times</b>
         </html>
       <single>
         <search>
@@ -295,7 +295,7 @@
       <table depends="$title5$">
         <title></title>
         <search>
-          <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | stats count(metrics.changes.total) by host | rename host as Host count(metrics.changes.total) as Total</query>
+          <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | stats sum(metrics.resources.total) by host | rename host as Host sum(metrics.resources.total) as Total</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
         </search>
