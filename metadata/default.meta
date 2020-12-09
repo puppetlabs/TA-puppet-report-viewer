@@ -42,3 +42,11 @@ owner = admin
 [macros/puppet_all_index]
 export = none
 owner = admin
+
+[macros/puppet_events_index]
+export = none
+owner = admin
+
+[macros/puppet_activity_index]
+export = none
+owner = admin
