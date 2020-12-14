@@ -1,6 +1,14 @@
 Release Notes
 ==============
 
+3.0.2:
+New Features:
+- puppet:events_summary and puppet:activity sourcetypes added.
+
+Fixes:
+- The searches that are used in the Overview tab to display resources under the "# of Resources" element and associated table used to display the number of reports. They have been corrected to display the number of resources.
+- Development workflow updated.
+
 3.0.1:
 **Breaking Changes**:
 - Alert Actions are now moved to https://github.com/puppetlabs/TA-puppet-alert-actions for better compatibility of this App for users who don't use or need the addons
