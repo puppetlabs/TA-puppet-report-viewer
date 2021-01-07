@@ -44,7 +44,6 @@
         <option name="colorMode">none</option>
         <option name="drilldown">all</option>
         <option name="field">count</option>
-        <option name="height">76</option>
         <option name="numberPrecision">0</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="rangeValues">[0,30,70,100]</option>
@@ -56,8 +55,7 @@
         <option name="trellis.size">medium</option>
         <option name="trendColorInterpretation">standard</option>
         <option name="trendDisplayMode">absolute</option>
-        <option name="unit">hosts</option>
-        <option name="unitPosition">after</option>
+        <option name="underLabel">hosts</option>
         <option name="useColors">0</option>
         <option name="useThousandSeparators">1</option>
         <drilldown>
@@ -128,7 +126,12 @@
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="refresh.display">preview</option>
         <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.size">large</option>
+        <option name="trellis.splitBy">_aggregation</option>
         <option name="trendDisplayMode">percent</option>
+        <option name="trendInterval">-24h</option>
         <option name="underLabel">hosts with failures</option>
         <drilldown>
           <condition match="$title3$==&quot;true&quot;">
@@ -239,6 +242,7 @@
         <option name="showTrendIndicator">1</option>
         <option name="trendDisplayMode">absolute</option>
         <option name="trendInterval">-7d</option>
+        <option name="underLabel">managed resources across all hosts</option>
         <drilldown>
           <condition match="$title5$==&quot;true&quot;">
             <unset token="title5"></unset>
@@ -262,11 +266,9 @@
         </search>
         <option name="drilldown">all</option>
         <option name="field">count</option>
-        <option name="height">70</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="refresh.display">preview</option>
-        <option name="unit">reports</option>
-        <option name="unitPosition">after</option>
+        <option name="underLabel">reports</option>
         <drilldown>
           <condition match="$title6$==&quot;true&quot;">
             <unset token="title6"></unset>
@@ -291,6 +293,7 @@
         <option name="drilldown">all</option>
         <option name="numberPrecision">0.00</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="underLabel">seconds</option>
         <option name="refresh.display">progressbar</option>
         <drilldown>
           <condition match="$title4$==&quot;true&quot;">
