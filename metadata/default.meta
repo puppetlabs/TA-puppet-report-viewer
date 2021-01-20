@@ -50,3 +50,15 @@ owner = admin
 [macros/puppet_activity_index]
 export = none
 owner = admin
+
+[macros/puppet_jobs_index]
+export = none
+owner = admin
+
+[macros/puppet_activities_rbac_index]
+export = none
+owner = admin
+
+[macros/puppet_activities_classifier_index]
+export = none
+owner = admin

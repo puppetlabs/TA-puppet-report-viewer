@@ -1,6 +1,19 @@
 Release Notes
 ==============
 
+3.0.3:
+New Features:
+- puppet:jobs, puppet:activities_rbac, and puppet:activities_classifier sourcetypes added.
+
+Fixes:
+- Some of the panels in the Overview dashboard still contain the "X" button in the upper right to close the pop-up panel when you click on the primary panel. Some of the other panels lost the X.
+
+- Changed the drilldown to set/unset the token that shows the drilldown panel on click. Effect of the change is that clicking on the panel with the drilldown hidden shows the drilldown. Clicking on the panel with the drilldown showing hides the drilldown.
+
+- Also removed the remaining "X" buttons.
+
+- Standardize some visual formatting - moved "units" to "captions" on the images to "hosts, seconds, etc" shows up underneath the reported numbers, rather than next to them, removed odd height settings.
+
 3.0.2:
 New Features:
 - puppet:events_summary and puppet:activity sourcetypes added.
