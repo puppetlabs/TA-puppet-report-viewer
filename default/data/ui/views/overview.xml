@@ -44,7 +44,6 @@
         <option name="colorMode">none</option>
         <option name="drilldown">all</option>
         <option name="field">count</option>
-        <option name="height">76</option>
         <option name="numberPrecision">0</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="rangeValues">[0,30,70,100]</option>
@@ -56,12 +55,16 @@
         <option name="trellis.size">medium</option>
         <option name="trendColorInterpretation">standard</option>
         <option name="trendDisplayMode">absolute</option>
-        <option name="unit">hosts</option>
-        <option name="unitPosition">after</option>
+        <option name="underLabel">hosts</option>
         <option name="useColors">0</option>
         <option name="useThousandSeparators">1</option>
         <drilldown>
-          <set token="title1">$row.certname$</set>
+          <condition match="$title1$==&quot;true&quot;">
+            <unset token="title1"></unset>
+          </condition>
+          <condition>
+            <set token="title1">true</set>
+          </condition>
         </drilldown>
       </single>
     </panel>
@@ -94,7 +97,12 @@
         <option name="underLabel">hosts with corrective changes</option>
         <option name="useColors">0</option>
         <drilldown>
-          <set token="title2">$row.click$</set>
+          <condition match="$title2$==&quot;true&quot;">
+            <unset token="title2"></unset>
+          </condition>
+          <condition>
+            <set token="title2">true</set>
+          </condition>
         </drilldown>
       </single>
     </panel>
@@ -118,10 +126,20 @@
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="refresh.display">preview</option>
         <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.size">large</option>
+        <option name="trellis.splitBy">_aggregation</option>
         <option name="trendDisplayMode">percent</option>
+        <option name="trendInterval">-24h</option>
         <option name="underLabel">hosts with failures</option>
         <drilldown>
-          <set token="title3">$row.click$</set>
+          <condition match="$title3$==&quot;true&quot;">
+            <unset token="title3"></unset>
+          </condition>
+          <condition>
+            <set token="title3">true</set>
+          </condition>
         </drilldown>
       </single>
     </panel>
@@ -209,8 +227,8 @@
   <row>
     <panel>
       <html>
-        <b># of Resources</b>                                                                        <button class="btn" align="right" data-unset-token="title5">X</button>
-        </html>
+        <b># of Resources</b>>
+      </html>
       <single>
         <search>
           <query>`puppet_summary_index` sourcetype="puppet:summary" pe_console="*" | dedup certname | stats sum(metrics.resources.total)</query>
@@ -224,8 +242,14 @@
         <option name="showTrendIndicator">1</option>
         <option name="trendDisplayMode">absolute</option>
         <option name="trendInterval">-7d</option>
+        <option name="underLabel">managed resources across all hosts</option>
         <drilldown>
-          <set token="title5">$row.click$</set>
+          <condition match="$title5$==&quot;true&quot;">
+            <unset token="title5"></unset>
+          </condition>
+          <condition>
+            <set token="title5">true</set>
+          </condition>
         </drilldown>
       </single>
     </panel>
@@ -242,13 +266,16 @@
         </search>
         <option name="drilldown">all</option>
         <option name="field">count</option>
-        <option name="height">70</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="refresh.display">preview</option>
-        <option name="unit">reports</option>
-        <option name="unitPosition">after</option>
+        <option name="underLabel">reports</option>
         <drilldown>
-          <set token="title6">$row.click$</set>
+          <condition match="$title6$==&quot;true&quot;">
+            <unset token="title6"></unset>
+          </condition>
+          <condition>
+            <set token="title6">true</set>
+          </condition>
         </drilldown>
       </single>
     </panel>
@@ -266,9 +293,15 @@
         <option name="drilldown">all</option>
         <option name="numberPrecision">0.00</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="underLabel">seconds</option>
         <option name="refresh.display">progressbar</option>
         <drilldown>
-          <set token="title4">$row.click$</set>
+          <condition match="$title4$==&quot;true&quot;">
+            <unset token="title4"></unset>
+          </condition>
+          <condition>
+            <set token="title4">true</set>
+          </condition>
         </drilldown>
       </single>
     </panel>
