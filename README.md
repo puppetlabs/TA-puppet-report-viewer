@@ -20,7 +20,7 @@ For detailed report generation, you will need to now install and configure the [
 
 Advanced Configuration
 ----------------
-All report views support using custom indexes for storing event data. They accomplish this with a series of advanced search macros. The queries assume each sourcetype can be stored in it's own index (facts, summary reports, detailed reports, bolt events, action events, activities, Puppet Enterprise metrics).
+All report views support using custom indicies for storing event data. They accomplish this with a series of advanced search macros. The queries assume each sourcetype can be stored in it's own index (facts, summary reports, detailed reports, bolt events, action events, jobs, activities_rbac, activities_classifier, and Puppet Enterprise metrics).
 
 There is one top level macro, `puppet_index` which defaults to "", if you configure the HEC to use a different index and want all Puppet in that index, change that value here to be `index=puppetindexname`.
 
