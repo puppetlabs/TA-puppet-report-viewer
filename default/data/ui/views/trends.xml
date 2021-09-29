@@ -1,4 +1,4 @@
-<form>
+<form version="1.1" theme="light">
   <label>Inventory trends</label>
   <description>This is an example dashboard that lets you filter your inventory by fact name and value (such as OS Family = RedHat) before selecting a fact (such as os version) you'd want to see over time.</description>
   <fieldset submitButton="false" autoRun="true">
