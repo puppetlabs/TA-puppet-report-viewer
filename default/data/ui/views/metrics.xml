@@ -2,43 +2,74 @@
   <label>Metrics</label>
   <description>Series of useful PE Metrics</description>
   <fieldset submitButton="false" autoRun="true">
+    <input type="dropdown" token="pe_console" searchWhenChanged="true">
+      <label>Puppet Install</label>
+      <prefix>pe_console="</prefix>
+      <suffix>"</suffix>
+      <fieldForLabel>pe_console</fieldForLabel>
+      <fieldForValue>pe_console</fieldForValue>
+      <search>
+        <query>`puppet_metrics_index` sourcetype="puppet:metrics"
+| dedup pe_console
+| table pe_console</query>
+        <earliest>$field2.earliest$</earliest>
+        <latest>$field2.latest$</latest>
+      </search>
+    </input>
     <input type="dropdown" token="host" searchWhenChanged="true">
-      <label>Puppet Infra Host</label>
-      <choice value="*">All</choice>
+      <label>Infrastructure Host</label>
       <prefix>host="</prefix>
       <suffix>"</suffix>
       <fieldForLabel>host</fieldForLabel>
       <fieldForValue>host</fieldForValue>
       <search>
-        <query>`puppet_metrics_index` sourcetype="puppet:metrics" | dedup host | table host</query>
-        <earliest>-24h@h</earliest>
-        <latest>now</latest>
+        <query>`puppet_metrics_index` sourcetype="puppet:metrics" $pe_console$
+| dedup host
+| table host</query>
+        <earliest>$field2.earliest$</earliest>
+        <latest>$field2.latest$</latest>
       </search>
-      <initialValue>*</initialValue>
     </input>
     <input type="dropdown" token="field1">
       <label>Metrics</label>
       <choice value="puppetserver">Puppet Server</choice>
       <choice value="puppetdb">PuppetDB</choice>
+      <choice value="postgres">PostgreSQL</choice>
       <choice value="orchestrator">Orchestrator</choice>
       <default>puppetserver</default>
       <change>
         <condition value="puppetserver">
           <set token="puppetserver">true</set>
           <unset token="puppetdb"></unset>
+          <unset token="postgres"></unset>
           <unset token="orchestrator"></unset>
         </condition>
         <condition value="puppetdb">
           <set token="puppetdb">true</set>
           <unset token="puppetserver"></unset>
+          <unset token="postgres"></unset>
+          <unset token="orchestrator"></unset>
+        </condition>
+        <condition value="postgres">
+          <set token="postgres">true</set>
+          <unset token="puppetserver"></unset>
+          <unset token="puppetdb"></unset>
           <unset token="orchestrator"></unset>
         </condition>
         <condition value="orchestrator">
           <set token="orchestrator">true</set>
           <unset token="puppetserver"></unset>
           <unset token="puppetdb"></unset>
+          <unset token="postgres"></unset>
         </condition>
       </change>
+    </input>
+    <input type="time" token="field2" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
     </input>
   </fieldset>
   <row>
@@ -47,15 +78,14 @@
       <chart>
         <title>Puppet Server Memory</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename status-service.status.experimental.jvm-metrics.heap-memory.committed as Committed_Memory, status-service.status.experimental.jvm-metrics.heap-memory.used as Used_Memory, status-service.status.experimental.jvm-metrics.up-time-ms as Uptime
 | eval Committed_Memory=Committed_Memory/1048576
 | eval Used_Memory=Used_Memory/1048576
 | eval Uptime=Uptime/3600000
 | timechart span=300s values(Committed_Memory) as "Committed Memory" values(Used_Memory) as "Used Memory" list(Uptime) as "Uptime"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -105,14 +135,13 @@
       <chart>
         <title>Puppet Server Non-Heap Memory</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename status-service.status.experimental.jvm-metrics.non-heap-memory.committed as Committed_Memory, status-service.status.experimental.jvm-metrics.non-heap-memory.used as Used_Memory
 | eval Committed_Memory=Committed_Memory/1048576
 | eval Used_Memory=Used_Memory/1048576
 | timechart span=300s values(Committed_Memory) as "Committed Memory" values(Used_Memory) as "Used Memory"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -158,12 +187,11 @@
       <chart>
         <title>Puppet Server CPU</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename status-service.status.experimental.jvm-metrics.cpu-usage as Puppet_Server_CPU
 | timechart span=300s list(Puppet_Server_CPU) as "CPU Usage"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -211,12 +239,11 @@
       <chart>
         <title>Average Requested JRubies</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename jruby-metrics.status.experimental.metrics.average-requested-jrubies as Requested_JRubies
 | timechart span=300s values(Requested_JRubies) as "Requested JRubies"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -265,14 +292,13 @@
       <chart>
         <title>Average Borrow / Compile Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename jruby-metrics.status.experimental.metrics.average-borrow-time as Borrow_Time, jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-catalog.mean as Compile_Time
 | eval Borrow_Time=Borrow_Time/1000
 | eval Compile_Time=Compile_Time/1000
 | timechart span=300s avg(Borrow_Time) as "Borrow Time" values(Compile_Time) as "Compile Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -281,7 +307,7 @@
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">seconds</option>
+        <option name="charting.axisTitleY.text">Seconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -321,12 +347,11 @@
       <chart>
         <title>Average Free JRubies</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename jruby-metrics.status.experimental.metrics.num-free-jrubies as Free_JRubies
 | timechart span=300s avg(Free_JRubies) as "Free JRubies"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -373,13 +398,12 @@
       <chart>
         <title>Average Wait Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename jruby-metrics.status.experimental.metrics.average-wait-time as Wait_Time
 | eval Wait_Time=Wait_Time/1000
 | timechart span=300s values(Wait_Time) as "Wait Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -389,7 +413,7 @@
         <option name="charting.axisLabelsY.majorUnit">1</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">seconds</option>
+        <option name="charting.axisTitleY.text">Seconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -430,8 +454,7 @@
       <chart>
         <title>JRuby Borrow Timers (Avg)</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-catalog.mean as Catalogs, jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-environment_classes.mean as Environment_Classes, jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-environment_modules.mean as Environment_Modules, 
 jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-environments.mean as Environments, 
 jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-file_metadata.mean as File_Metadata, 
@@ -444,8 +467,8 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.mean as N
 | eval Nodes=Nodes/1000
 | eval Reports=Reports/1000
 | timechart span=300s list(Catalogs) as Catalogs list(Environment_Classes) as "Environment Classes" list(Environment_Modules) as "Environment Module"s list(Environments) as Environments list(File_Metadata) as "File Metadata" list(Nodes) as Nodes list(Reports) as Reports</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -491,15 +514,14 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.mean as N
       <chart>
         <title>JRuby Borrow Timers (Rate)</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-catalog.rate as Catalogs, jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-environment_classes.rate as Environment_Classes, jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-environment_modules.rate as Environment_Modules, 
 jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-environments.rate as Environments, 
 jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-file_metadata.rate as File_Metadata, 
 jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as Nodes, jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-report.rate as Reports
 | timechart span=300s sum(Catalogs) as "Catalogs" sum(Environment_Classes) as "Environment Classes" sum(Environment_Modules) as "Environment Modules" sum(Environments) as "Environments" sum(File_Metadata) as "File Metadata" sum(Nodes) as "Nodes" sum(Reports) as "Reports"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -547,8 +569,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Mean HTTP Endpoint Times</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename master.status.experimental.http-metrics{}.mean as HTTP_Time, master.status.experimental.http-metrics{}.route-id as Endpoint
 | eval x=mvzip(HTTP_Time,Endpoint)
 | mvexpand x 
@@ -556,8 +577,8 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
 | eval HTTP_Time=mvindex(x,0) 
 | eval Endpoint=mvindex(x,1) 
 | timechart span=300s max(HTTP_Time) by Endpoint</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -614,8 +635,8 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
 | eval Function_Time=mvindex(x,0) 
 | eval Function=mvindex(x,1) 
 | timechart span=300s values(Function_Time) by Function</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -667,8 +688,8 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
 | search pe_service=puppetserver $host$
 | rename file-sync-storage-service.status.experimental.metrics.num-commits as "Number of Commits", file-sync-client-service.status.experimental.metrics.num-fetches as "Number of Fetches"
 | timechart span=300s sum("Number of Commits") as "Number of Commits" sum("Number of Fetches") as "Number of Fetches"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -677,7 +698,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">count</option>
+        <option name="charting.axisTitleY.text">Count</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -714,12 +735,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Held Time / Wait Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename jruby-metrics.status.experimental.metrics.average-lock-held-time as "JRuby - Avg Lock Held Time", jruby-metrics.status.experimental.metrics.average-lock-wait-time as "JRuby - Avg Lock Wait Time"
 | timechart span=300s values("JRuby - Avg Lock Held Time") as "JRuby - Avg Lock Held Time" values("JRuby - Avg Lock Wait Time") as "JRuby - Avg Lock Wait Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -728,7 +748,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -767,12 +787,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Client Service Times</title>
         <search>
-          <query>`puppet_metrics_index` "" sourcetype="puppet:metrics"
-| search pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` "" sourcetype="puppet:metrics" pe_service=puppetserver $host$
 | rename file-sync-client-service.status.experimental.metrics.average-clone-time as "Avg Clone Time", file-sync-client-service.status.experimental.metrics.average-fetch-time as "Avg Fetch Time", file-sync-client-service.status.experimental.metrics.average-sync-clean-check-time as "Avg Sync Clean Time", file-sync-client-service.status.experimental.metrics.average-sync-time as "Avg Sync Time"
 | timechart span=300s values("Avg Clone Time") as "Avg Clone Time" values("Avg Fetch Time") as "Avg Fetch Time" values("Avg Sync Clean Time") as "Avg Sync Clean Time" values("Avg Sync Time") as "Avg Sync Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -781,7 +800,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -820,15 +839,14 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>PuppetDB Heap Memory</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename status-service.status.experimental.jvm-metrics.heap-memory.committed as "Committed Memory", status-service.status.experimental.jvm-metrics.heap-memory.used as "Used Memory", status-service.status.experimental.jvm-metrics.up-time-ms as "Uptime"
 | eval 'Committed Memory'='Committed Memory'/1048576
 | eval 'Used Memory'='Used Memory'/1048576
 | eval 'Uptime'='Uptime'/3600000
 | timechart span=300s values('Committed Memory') as "Committed Memory" values('Used Memory') as "Used Memory" list('Uptime') as "Uptime"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -878,14 +896,13 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>PuppetDB Non-Heap Memory</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename status-service.status.experimental.jvm-metrics.non-heap-memory.committed as Committed_Memory, status-service.status.experimental.jvm-metrics.non-heap-memory.used as Used_Memory
 | eval Committed_Memory=Committed_Memory/1048576
 | eval Used_Memory=Used_Memory/1048576
 | timechart span=300s values(Committed_Memory) as "Committed Memory" values(Used_Memory) as "Used Memory"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -931,12 +948,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>PuppetDB CPU</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename status-service.status.experimental.jvm-metrics.cpu-usage as PuppetDB_CPU
 | timechart span=300s values(PuppetDB_CPU) as "CPU Usage"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -984,13 +1000,12 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Commands Per Second</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename global_processed.FiveMinuteRate as "Commands per Second"
 | eval 'Commands per Second'='Commands per Second'/300
 | timechart span=300s list('Commands per Second') as "Commands per Second"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -999,12 +1014,12 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">wps</option>
+        <option name="charting.axisTitleY.text">WPS</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
-        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.abbreviation">auto</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.abbreviation">none</option>
         <option name="charting.axisY2.enabled">0</option>
@@ -1036,12 +1051,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Command Processing Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename global_processing-time.95thPercentile as "Command Processing Time"
 | timechart span=300s list("Command Processing Time") as "Command Processing Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1050,7 +1064,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1089,12 +1103,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Queue Depth</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename puppetdb-status.status.queue_depth as "Queue Depth"
 | timechart span=300s list("Queue Depth") as "Queue Depth"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1103,7 +1116,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">commands</option>
+        <option name="charting.axisTitleY.text">Commands</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1142,12 +1155,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Replace Catalog Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename storage_replace-catalog-time.95thPercentile as "Replace Catalog Time"
 | timechart span=300s list("Replace Catalog Time") as "Replace Catalog Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1156,7 +1168,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1193,12 +1205,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Replace Facts Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename storage_replace-facts-time.95thPercentile as "Replace Facts Time"
 | timechart span=300s list("Replace Facts Time") as "Replace Facts Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1207,7 +1218,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1244,12 +1255,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Store Report Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename storage_store-report-time.95thPercentile as "Store Report Time"
 | timechart span=300s list("Store Report Time") as "Store Report Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1258,7 +1268,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1297,12 +1307,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>GC CPU Usage</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename status-service.status.experimental.jvm-metrics.gc-cpu-usage as 'GC_CPU_Usage'
 | timechart span=300s list('GC_CPU_Usage') as "GC CPU Usage"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1348,12 +1357,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>GC Stats</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename "status-service.status.experimental.jvm-metrics.gc-stats.PS MarkSweep.count" as 'Count', "status-service.status.experimental.jvm-metrics.gc-stats.PS MarkSweep.last-gc-info.duration-ms" as 'Duration'
 | timechart span=300s list('Count') as "Count" list('Duration') as "Duration"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1403,12 +1411,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Average Command Persistence Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename global_message-persistence-time.95thPercentile as "Command Persistence Time"
 | timechart span=300s avg("Command Persistence Time") as "Average Command Persistence Time"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1417,7 +1424,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1456,12 +1463,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Average Read Duration</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename  PDBReadPool_pool_Usage.95thPercentile as "Read Duration"
 | timechart span=300s avg("Read Duration") as "Average Read Duration"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1470,7 +1476,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1507,12 +1513,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Peak Read Pool Wait</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename PDBReadPool_pool_Wait.999thPercentile as "Read Pool Wait"
 | timechart span=300s values("Read Pool Wait") as "Peak Read Pool Wait"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1521,7 +1526,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1558,12 +1563,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Read Pool Pending Connections</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename PDBReadPool_pool_PendingConnections.Value as "Read Pool Pending"
 | timechart span=300s values("Read Pool Pending") as "Read Pool Pending Connections"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1572,7 +1576,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Count</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1611,12 +1615,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Average Write Duration</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename PDBWritePool_pool_Usage.95thPercentile as "Write Duration"
 | timechart span=300s avg("Write Duration") as "Average Write Duration"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1625,7 +1628,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1662,12 +1665,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Peak Write Pool Wait</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename PDBWritePool_pool_Wait.999thPercentile as "Write Pool Wait"
 | timechart span=300s values("Write Pool Wait") as "Peak Write Pool Wait"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1676,7 +1678,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1713,12 +1715,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Write Pool Pending Connections</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename PDBWritePool_pool_PendingConnections.Value as "Write Pool Pending"
 | timechart span=300s values("Write Pool Pending") as "Write Pool Pending Connections"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1727,7 +1728,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">milliseconds</option>
+        <option name="charting.axisTitleY.text">Count</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1766,12 +1767,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Global Discards</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename global_discarded.OneMinuteRate as "Global Discards"
 | timechart span=300s values("Global Discards") as "Global Discards"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1780,7 +1780,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">count</option>
+        <option name="charting.axisTitleY.text">Count</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1817,12 +1817,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Global Fatals</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
 | rename global_fatal.OneMinuteRate as "Global Fatals"
 | timechart span=300s values("Global Fatals") as "Global Fatals"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1831,7 +1830,7 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.text">Date/Time</option>
         <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.text">count</option>
+        <option name="charting.axisTitleY.text">Count</option>
         <option name="charting.axisTitleY.visibility">visible</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
@@ -1865,20 +1864,437 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
     </panel>
   </row>
   <row>
+    <panel depends="$postgres$">
+      <title>PostgreSQL Performance</title>
+      <chart>
+        <title>Connections per Database</title>
+        <search>
+          <query>`puppet_metrics_index` sourcetype=puppet:metrics pe_service=postgres $host$
+| rename databases.pe-activity.database_stats.numbackends as PE_Activity, databases.pe-classifier.database_stats.numbackends as PE_Classifier, databases.pe-inventory.database_stats.numbackends as PE_Inventory, databases.pe-orchestrator.database_stats.numbackends as PE_Orchestrator, databases.pe-puppetdb.database_stats.numbackends as PE_PuppetDB, databases.pe-rbac.database_stats.numbackends as PE_RBAC
+| timechart span=300s values(PE_Activity) as "PE Activity" values(PE_Classifier) as "PE Classifier" values(PE_Inventory) as "PE Inventory" values(PE_Orchestrator) as "PE Orchestrator" values(PE_PuppetDB) as "PE PuppetDB" values(PE_RBAC) as "PE RBAC"</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Date/Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Connections</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel depends="$postgres$">
+      <title>PostgreSQL Performance</title>
+      <chart>
+        <title>Checkpoints (per 30 minutes)</title>
+        <search>
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=postgres $host$
+| rename checkpoints.checkpoints_timed as Checkpoints_Timed, checkpoints.checkpoints_req as Checkpoints_Required
+| timechart span=30m max(Checkpoints_Timed) as "Timed" max(Checkpoints_Required) as "Required"</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>30m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Date/Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Count</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$postgres$">
+      <title>PostgreSQL Performance</title>
+      <chart>
+        <title>Longest Open Transaction</title>
+        <search>
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=postgres $host$
+| rename oldest_transaction.age as Longest_Open_Transaction
+| timechart span=1h values(Longest_Open_Transaction) as "Longest Open Transaction"</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>1h</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Date/Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Milliseconds</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel depends="$postgres$">
+      <title>PostgreSQL Performance</title>
+      <chart>
+        <title>Replication Lag</title>
+        <search>
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=postgres $host$
+| rename replication_slots.pgl_pe_activity_*.lag_bytes as PE-ACTIVITY_*, replication_slots.pgl_pe_classifier_*.lag_bytes as PE-CLASSIFIER_*, replication_slots.pgl_pe_inventory_*.lag_bytes as PE-INVENTORY_*, replication_slots.pgl_pe_orchestrator_*.lag_bytes as PE-ORCHESTRATOR_*, replication_slots.pgl_pe_puppetdb_*.lag_bytes as PE-PUPPETDB_*, replication_slots.pgl_pe_rbac_*.lag_bytes as PE-RBAC_*,
+| timechart span=300s values(PE-ACTIVITY_*) as PE_ACTIVITY_* values(PE-CLASSIFIER_*) as PE-CLASSIFIER_* values(PE-INVENTORY_*) as PE-INVENTORY_* values(PE-ORCHESTRATOR_*) as PE-ORCHESTRATOR_* values(PE-PUPPETDB_*) as PE-PUPPETDB_* values(PE-RBAC_*) as PE-RBAC_*</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Date/Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Bytes</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$postgres$">
+      <title>PostgreSQL Performance</title>
+      <chart>
+        <title>Database Sizes</title>
+        <search>
+          <query>`puppet_metrics_index` sourcetype=puppet:metrics pe_service=postgres $host$
+| rename databases.pe-activity.database_stats.size_bytes as PE_Activity, databases.pe-classifier.database_stats.size_bytes as PE_Classifier, databases.pe-inventory.database_stats.size_bytes as PE_Inventory, databases.pe-orchestrator.database_stats.size_bytes as PE_Orchestrator, databases.pe-puppetdb.database_stats.size_bytes as PE_PuppetDB, databases.pe-rbac.database_stats.size_bytes as PE_RBAC
+| eval PE_Activity=PE_Activity/1048576
+| eval PE_Classifier=PE_Classifier/1048576
+| eval PE_Inventory=PE_Inventory/1048576
+| eval PE_Orchestrator=PE_Orchestrator/1048576
+| eval PE_PuppetDB=PE_PuppetDB/1048576
+| eval PE_RBAC=PE_RBAC/1048576
+| timechart span=300s values(PE_Activity) as "PE Activity" values(PE_Classifier) as "PE Classifier" values(PE_Inventory) as "PE Inventory" values(PE_Orchestrator) as "PE Orchestrator" values(PE_PuppetDB) as "PE PuppetDB" values(PE_RBAC) as "PE RBAC"</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Date/Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Size MiB</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$postgres$">
+      <title>PostgreSQL Performance</title>
+      <chart>
+        <title>Index Sizes</title>
+        <search>
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=postgres $host$
+| rename databases.pe-activity.index_stats.public.*.size_bytes as PE-ACTIVITY_*, databases.pe-classifier.index_stats.public.*.size_bytes as PE-CLASSIFIER_*, databases.pe-inventory.index_stats.public.*.size_bytes as PE-INVENTORY_*, databases.pe-orchestrator.index_stats.public.*.size_bytes as PE-ORCHESTRATOR_*, databases.pe-puppetdb.index_stats.public.*.size_bytes as PE-PUPPETDB_*, databases.pe-rbac.index_stats.public.*.size_bytes as PE-RBAC_*
+| timechart span=300s values(PE-ACTIVITY_*) as PE-ACTIVITY_* values(PE-CLASSIFIER_*) as PE-CLASSIFIER_* values(PE-INVENTORY_*) as PE-INVENTORY_* values(PE-ORCHESTRATOR_*) as PE-ORCHESTRATOR_* values(PE-PUPPETDB_*) as PE-PUPPETDB_* values(PE-RBAC_*) as PE-RBAC_*</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Date/Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Size (Bytes)</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$postgres$">
+      <title>PostgreSQL Performance</title>
+      <chart>
+        <title>Table Sizes</title>
+        <search>
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=postgres $host$
+| rename databases.pe-activity.table_stats.*.size_bytes as PE-ACTIVITY_*, databases.pe-classifier.table_stats.*.size_bytes as PE-CLASSIFIER_*, databases.pe-inventory.table_stats.*.size_bytes as PE-INVENTORY_*, databases.pe-orchestrator.table_stats.*.size_bytes as PE-ORCHESTRATOR_*, databases.pe-puppetdb.table_stats.*.size_bytes as PE-PUPPETDB_*, databases.pe-rbac.table_stats.*.size_bytes as PE-RBAC_*
+| timechart span=300s values(PE-ACTIVITY_*) as PE-ACTIVITY_* values(PE-CLASSIFIER_*) as PE-CLASSIFIER_* values(PE-INVENTORY_*) as PE-INVENTORY_* values(PE-ORCHESTRATOR_*) as PE-ORCHESTRATOR_* values(PE-PUPPETDB_*) as PE-PUPPETDB_* values(PE-RBAC_*) as PE-RBAC_*</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Date/Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Size (Bytes)</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$postgres$">
+      <title>PostgreSQL Performance</title>
+      <chart>
+        <title>TOAST Table Sizes</title>
+        <search>
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=postgres $host$
+| rename databases.pe-activity.toast_stats.pg_toast.pg_toast_*.size_bytes as PE-ACTIVITY_*, databases.pe-classifier.toast_stats.pg_toast.pg_toast_*.size_bytes as PE-CLASSIFIER_*, databases.pe-inventory.toast_stats.pg_toast.pg_toast_*.size_bytes as PE-INVENTORY_*, databases.pe-orchestrator.toast_stats.pg_toast.pg_toast_*.size_bytes as PE-ORCHESTRATOR_*, databases.pe-puppetdb.toast_stats.pg_toast.pg_toast_*.size_bytes as PE-PUPPETDB_*, databases.pe-rbac.toast_stats.pg_toast.pg_toast_*.size_bytes as PE-RBAC_*
+| timechart span=300s values(PE-ACTIVITY_*) as PE-ACTIVITY_* values(PE-CLASSIFIER_*) as PE-CLASSIFIER_* values(PE-INVENTORY_*) as PE-INVENTORY_* values(PE-ORCHESTRATOR_*) as PE-ORCHESTRATOR_* values(PE-PUPPETDB_*) as PE-PUPPETDB_* values(PE-RBAC_*) as PE-RBAC_*</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Date/Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Size (Bytes)</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
     <panel depends="$orchestrator$">
       <title>Orchestrator Performance</title>
       <chart>
         <title>Orchestrator Heap Memory</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=orchestrator $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=orchestrator $host$
 | rename status-service.status.experimental.jvm-metrics.heap-memory.committed as Committed_Memory, status-service.status.experimental.jvm-metrics.heap-memory.used as Used_Memory, status-service.status.experimental.jvm-metrics.up-time-ms as Uptime
 | eval Committed_Memory=Committed_Memory/1048576
 | eval Used_Memory=Used_Memory/1048576
 | eval Uptime=Uptime/3600000
 | timechart span=300s values(Committed_Memory) as "Committed Memory" values(Used_Memory) as "Used Memory" list(Uptime) as "Uptime"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1926,14 +2342,13 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Orchestrator Non-Heap Memory</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=orchestrator $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=orchestrator $host$
 | rename status-service.status.experimental.jvm-metrics.non-heap-memory.committed as Committed_Memory, status-service.status.experimental.jvm-metrics.non-heap-memory.used as Used_Memory
 | eval Committed_Memory=Committed_Memory/1048576
 | eval Used_Memory=Used_Memory/1048576
 | timechart span=300s values(Committed_Memory) as "Committed Memory" values(Used_Memory) as "Used Memory"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -1981,12 +2396,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>GC CPU Usage</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=orchestrator $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=orchestrator $host$
 | rename status-service.status.experimental.jvm-metrics.gc-cpu-usage as 'GC_CPU_Usage'
 | timechart span=300s list('GC_CPU_Usage') as "GC CPU Usage"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
@@ -2032,12 +2446,11 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>GC Stats</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics"
-| search pe_service=orchestrator $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=orchestrator $host$
 | rename "status-service.status.experimental.jvm-metrics.gc-stats.PS MarkSweep.count" as 'Count', "status-service.status.experimental.jvm-metrics.gc-stats.PS MarkSweep.last-gc-info.duration-ms" as 'Duration'
 | timechart span=300s list('Count') as "Count" list('Duration') as "Duration"</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
           <refresh>5m</refresh>
           <refreshType>delay</refreshType>
