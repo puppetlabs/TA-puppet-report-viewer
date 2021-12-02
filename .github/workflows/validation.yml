@@ -1,0 +1,23 @@
+name: Validate Splunk App
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  appinspect:
+    runs-on: ubuntu-latest
+    container: ghcr.io/coreymbe/splunk-appinspect:latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run AppInspect
+        run: splunk-appinspect inspect TA-puppet-report-viewer --output-file appinspect_result.json --mode precert
+
+      - name: Upload AppInspect Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: appinspect
+          path: appinspect_result.json
