@@ -39,6 +39,9 @@
     }
   },
   "dependencies": {
+    "status_indicator_app": {
+      "version": ">=1.5.0"
+    }
   },
   "tasks": [],
   "inputGroups": {
