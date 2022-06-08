@@ -1,0 +1,2356 @@
+<form version="1.1" theme="light">
+  <label>PE Status Checks</label>
+  <description>https://forge.puppet.com/modules/puppetlabs/pe_status_check/readme#fact-pe_status_check</description>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="dropdown" token="pe_console" searchWhenChanged="true">
+      <label>Puppet Install</label>
+      <prefix>pe_console="</prefix>
+      <suffix>"</suffix>
+      <fieldForLabel>pe_console</fieldForLabel>
+      <fieldForValue>pe_console</fieldForValue>
+      <search>
+        <query>`puppet_facts_index` sourcetype="puppet:facts"
+| dedup pe_console
+| table pe_console</query>
+        <earliest>$field2.earliest$</earliest>
+        <latest>$field2.latest$</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="field1">
+      <label>Check Type</label>
+      <choice value="infra">Infrastructure Nodes</choice>
+      <choice value="agent">Agent Nodes</choice>
+      <default>infra</default>
+      <change>
+        <condition value="infra">
+          <set token="infra">true</set>
+          <unset token="agent"></unset>
+        </condition>
+        <condition value="agent">
+          <set token="agent">true</set>
+          <unset token="infra"></unset>
+        </condition>
+      </change>
+    </input>
+    <input type="time" token="field2" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel depends="$infra$">
+      <title>Puppet Service Status</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0001</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0001!=null
+| rename pe_status_check.S0001 as puppet_status
+| stats count(eval(puppet_status="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s1$==&quot;true&quot;">
+            <unset token="drill_s1"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s1">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>PXP Agent Status</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0002</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0002!=null
+| rename pe_status_check.S0002 as pxp_status
+| stats count(eval(pxp_status="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s2$==&quot;true&quot;">
+            <unset token="drill_s2"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s2">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>No-Op Check</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0003</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0003!=null
+| rename pe_status_check.S0003 as noop_check
+| stats count(eval(noop_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s3$==&quot;true&quot;">
+            <unset token="drill_s3"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s3">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Infrastructure Status</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0004</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0004!=null
+| rename pe_status_check.S0004 as infra_status
+| stats count(eval(infra_status="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s4$==&quot;true&quot;">
+            <unset token="drill_s4"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s4">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$,$drill_s1$">
+      <title>S0001</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0001=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s2$">
+      <title>S0002</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0002=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s3$">
+      <title>S0003</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0003=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s4$">
+      <title>S0004</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0004=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$">
+      <title>CA Expiry</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0005</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0005!=null
+| rename pe_status_check.S0005 as ca_expiry
+| stats count(eval(ca_expiry="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s5$==&quot;true&quot;">
+            <unset token="drill_s5"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s5">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Metrics Enabled</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0006</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0006!=null
+| rename pe_status_check.S0006 as metrics_enabled
+| stats count(eval(metrics_enabled="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s6$==&quot;true&quot;">
+            <unset token="drill_s6"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s6">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>PostgreSQL Disk Space (20%)</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0007</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0007!=null
+| rename pe_status_check.S0007 as pg_data
+| stats count(eval(pg_data="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s7$==&quot;true&quot;">
+            <unset token="drill_s7"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s7">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>CODEDIR Disk Space (20%)</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0008</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0008!=null
+| rename pe_status_check.S0008 as codedir_data
+| stats count(eval(codedir_data="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s8$==&quot;true&quot;">
+            <unset token="drill_s8"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s8">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$,$drill_s5$">
+      <title>S0005</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0005=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s6$">
+      <title>S0006</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0006=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s7$">
+      <title>S0007</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0007=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s8$">
+      <title>S0008</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0008=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$">
+      <title>Puppet Server Status</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0009</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0009!=null
+| rename pe_status_check.S0009 as pupserv_status
+| stats count(eval(pupserv_status="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s9$==&quot;true&quot;">
+            <unset token="drill_s9"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s9">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>PuppetDB Status</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0010</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0010!=null
+| rename pe_status_check.S0010 as pdb_status
+| stats count(eval(pdb_status="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s10$==&quot;true&quot;">
+            <unset token="drill_s10"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s10">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>PostgreSQL Status</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0011</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0011!=null
+| rename pe_status_check.S0011 as pg_status
+| stats count(eval(pg_status="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s11$==&quot;true&quot;">
+            <unset token="drill_s11"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s11">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Puppet Report</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0012</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0012!=null
+| rename pe_status_check.S0012 as report_check
+| stats count(eval(report_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s12$==&quot;true&quot;">
+            <unset token="drill_s12"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s12">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$,$drill_s9$">
+      <title>S0009</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0009=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s10$">
+      <title>S0010</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0010=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s11$">
+      <title>S0011</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0011=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s12$">
+      <title>S0012</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0012=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$">
+      <title>Puppet Catalog</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0013</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0013!=null
+| rename pe_status_check.S0013 as catalog_check
+| stats count(eval(catalog_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s13$==&quot;true&quot;">
+            <unset token="drill_s13"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s13">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>PuppetDB Command Queue</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0014</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0014!=null
+| rename pe_status_check.S0014 as cmdq_check
+| stats count(eval(cmdq_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s14$==&quot;true&quot;">
+            <unset token="drill_s14"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s14">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Puppet Server OOM</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0016</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0016!=null
+| rename pe_status_check.S0016 as oom_pupserv
+| stats count(eval(oom_pupserv="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s16$==&quot;true&quot;">
+            <unset token="drill_s16"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s16">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>PuppetDB OOM</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0017</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0017!=null
+| rename pe_status_check.S0017 as oom_pdb
+| stats count(eval(oom_pdb="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s17$==&quot;true&quot;">
+            <unset token="drill_s17"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s17">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$,$drill_s13$">
+      <title>S0013</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0013=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s14$">
+      <title>S0014</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0014=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s16$">
+      <title>S0016</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0016=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s17$">
+      <title>S0017</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0017=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$">
+      <title>PE Orchestrator OOM</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0018</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0018!=null
+| rename pe_status_check.S0018 as oom_orch
+| stats count(eval(oom_orch="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s18$==&quot;true&quot;">
+            <unset token="drill_s18"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s18">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Average Free JRubies</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0019</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0019!=null
+| rename pe_status_check.S0019 as jruby_check
+| stats count(eval(jruby_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s19$==&quot;true&quot;">
+            <unset token="drill_s19"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s19">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Memory Check (10%)</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0021</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0021!=null
+| rename pe_status_check.S0021 as mem_check
+| stats count(eval(mem_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s21$==&quot;true&quot;">
+            <unset token="drill_s21"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s21">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Valid License</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0022</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0022!=null
+| rename pe_status_check.S0022 as license_check
+| stats count(eval(license_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s22$==&quot;true&quot;">
+            <unset token="drill_s22"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s22">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$,$drill_s18$">
+      <title>S0018</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0018=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s19$">
+      <title>S0019</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0019=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s21$">
+      <title>S0021</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0021=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s22$">
+      <title>S0022</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0022=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$">
+      <title>PuppetDB Discards</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0024</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0024!=null
+| rename pe_status_check.S0024 as pdb_discards
+| stats count(eval(pdb_discards="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s24$==&quot;true&quot;">
+            <unset token="drill_s24"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s24">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>PostgreSQL Max Connections (90%)</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0029</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0029!=null
+| rename pe_status_check.S0029 as pg_conn_check
+| stats count(eval(pg_conn_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s29$==&quot;true&quot;">
+            <unset token="drill_s29"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s29">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Cached Catalogs</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0030</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0030!=null
+| rename pe_status_check.S0030 as cached_catalog
+| stats count(eval(cached_catalog="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s30$==&quot;true&quot;">
+            <unset token="drill_s30"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s30">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Old Agent Packages</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0031</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0031!=null
+| rename pe_status_check.S0031 as old_agent_check
+| stats count(eval(old_agent_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s31$==&quot;true&quot;">
+            <unset token="drill_s31"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s31">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$,$drill_s24$">
+      <title>S0024</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0024=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s29$">
+      <title>S0029</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0029=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s30$">
+      <title>S0030</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0030=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s31$">
+      <title>S0031</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0031=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$">
+      <title>Hiera 5 Enabled</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0033</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0033!=null
+| rename pe_status_check.S0033 as hiera_5
+| stats count(eval(hiera_5="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s33$==&quot;true&quot;">
+            <unset token="drill_s33"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s33">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Latest PE Version</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0034</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0034!=null
+| rename pe_status_check.S0034 as upgrade_check
+| stats count(eval(upgrade_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s34$==&quot;true&quot;">
+            <unset token="drill_s34"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s34">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Valid Modules Installed</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0035</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0035!=null
+| rename pe_status_check.S0035 as module_check
+| stats count(eval(module_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s35$==&quot;true&quot;">
+            <unset token="drill_s35"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s35">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Puppet Server Conf - Max-Queued-Requests (150+)</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0036</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0036!=null
+| rename pe_status_check.S0036 as jruby_mqr
+| eval color=if(jruby_mqr == "true", "#4CBB17", "#FF0000"), icon=if(jruby_mqr == "true", "check", "warning")
+| table jruby_mqr icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s36$==&quot;true&quot;">
+            <unset token="drill_s36"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s36">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$,$drill_s33$">
+      <title>S0033</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0033=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s34$">
+      <title>S0034</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0034=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s35$">
+      <title>S0035</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0035=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s36$">
+      <title>S0036</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0036=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$">
+      <title>Environment Count (100+)</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0038</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0038!=null
+| rename pe_status_check.S0038 as env_count
+| stats count(eval(env_count="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s38$==&quot;true&quot;">
+            <unset token="drill_s38"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s38">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>Puppet Server - Max-Queued-Requests</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0039</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0039!=null
+| rename pe_status_check.S0039 as pupservq_check
+| stats count(eval(pupservq_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s39$==&quot;true&quot;">
+            <unset token="drill_s39"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s39">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>System Metrics Enabled</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0040</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0040!=null
+| rename pe_status_check.S0040 as sys_metrics_check
+| stats count(eval(sys_metrics_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s40$==&quot;true&quot;">
+            <unset token="drill_s40"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s40">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$infra$">
+      <title>PXP Broker Status</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>S0042</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ pe_status_check.S0042!=null
+| rename pe_status_check.S0042 as pxp_broker_check
+| stats count(eval(pxp_broker_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_s42$==&quot;true&quot;">
+            <unset token="drill_s42"></unset>
+          </condition>
+          <condition>
+            <set token="drill_s42">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$infra$,$drill_s38$">
+      <title>S0038</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0038=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s39$">
+      <title>S0039</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0039=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s40$">
+      <title>S0040</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0040=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$infra$,$drill_s42$">
+      <title>S0042</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" pe_status_check.S0042=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$agent$">
+      <title>Host Cert Expiration</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>AS001</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" agent_status_check.AS001!=null
+| rename agent_status_check.AS001 as expired_cert_check
+| stats count(eval(expired_cert_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_a1$==&quot;true&quot;">
+            <unset token="drill_a1"></unset>
+          </condition>
+          <condition>
+            <set token="drill_a1">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$agent$">
+      <title>PXP Agent Status</title>
+      <viz type="status_indicator_app.status_indicator">
+        <title>AS002</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" $pe_console$ agent_status_check.AS002!=null
+| rename agent_status_check.AS002 as agent_pxp_check
+| stats count(eval(agent_pxp_check="false")) as status_failed
+| eval color=if(status_failed == 0, "#4CBB17", "#FF0000"), icon=if(status_failed == 0, "check", "warning")
+| table status_failed icon color</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">warning</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">2</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <condition match="$drill_a2$==&quot;true&quot;">
+            <unset token="drill_a2"></unset>
+          </condition>
+          <condition>
+            <set token="drill_a2">true</set>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$agent$,$drill_a1$">
+      <title>AS001</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" agent_status_check.AS001=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel depends="$agent$,$drill_a2$">
+      <title>AS002</title>
+      <table>
+        <title>Failed Checks</title>
+        <search>
+          <query>`puppet_facts_index` sourcetype="puppet:facts" agent_status_check.AS002=false $pe_console$
+| stats count by host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="list">[#FF0000]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

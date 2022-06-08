@@ -16,5 +16,6 @@
 <view name="hosts_with_failures" />
 <view name="hosts_with_corrective_changes" />
 </collection>
+<view name="pe_status_check" label="PE Status Checks"/>
 <view name="search" label="Search"/>
 </nav>
