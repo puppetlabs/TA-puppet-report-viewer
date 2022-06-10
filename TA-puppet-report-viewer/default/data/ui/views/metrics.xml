@@ -12,25 +12,11 @@
         <query>`puppet_metrics_index` sourcetype="puppet:metrics"
 | dedup pe_console
 | table pe_console</query>
-        <earliest>$field2.earliest$</earliest>
-        <latest>$field2.latest$</latest>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
       </search>
     </input>
-    <input type="dropdown" token="host" searchWhenChanged="true">
-      <label>Infrastructure Host</label>
-      <prefix>host="</prefix>
-      <suffix>"</suffix>
-      <fieldForLabel>host</fieldForLabel>
-      <fieldForValue>host</fieldForValue>
-      <search>
-        <query>`puppet_metrics_index` sourcetype="puppet:metrics" $pe_console$
-| dedup host
-| table host</query>
-        <earliest>$field2.earliest$</earliest>
-        <latest>$field2.latest$</latest>
-      </search>
-    </input>
-    <input type="dropdown" token="field1">
+    <input type="dropdown" token="metric" searchWhenChanged="true">
       <label>Metrics</label>
       <choice value="puppetserver">Puppet Server</choice>
       <choice value="puppetdb">PuppetDB</choice>
@@ -63,6 +49,20 @@
           <unset token="postgres"></unset>
         </condition>
       </change>
+    </input>
+    <input type="dropdown" token="host" searchWhenChanged="true">
+      <label>Infrastructure Host</label>
+      <prefix>host="</prefix>
+      <suffix>"</suffix>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>`puppet_metrics_index` sourcetype="puppet:metrics" $pe_console$ pe_service=$metric$
+| dedup host
+| table host</query>
+        <earliest>$field2.earliest$</earliest>
+        <latest>$field2.latest$</latest>
+      </search>
     </input>
     <input type="time" token="field2" searchWhenChanged="true">
       <label>Time Range</label>
@@ -239,9 +239,9 @@
       <chart>
         <title>Average Requested JRubies</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver
 | rename jruby-metrics.status.experimental.metrics.average-requested-jrubies as Requested_JRubies
-| timechart span=300s values(Requested_JRubies) as "Requested JRubies"</query>
+| timechart span=300s values(Requested_JRubies) as "Requested JRubies" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -292,11 +292,11 @@
       <chart>
         <title>Average Borrow / Compile Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver
 | rename jruby-metrics.status.experimental.metrics.average-borrow-time as Borrow_Time, jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-catalog.mean as Compile_Time
 | eval Borrow_Time=Borrow_Time/1000
 | eval Compile_Time=Compile_Time/1000
-| timechart span=300s avg(Borrow_Time) as "Borrow Time" values(Compile_Time) as "Compile Time"</query>
+| timechart span=300s avg(Borrow_Time) as "Borrow Time" values(Compile_Time) as "Compile Time" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -347,9 +347,9 @@
       <chart>
         <title>Average Free JRubies</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver
 | rename jruby-metrics.status.experimental.metrics.num-free-jrubies as Free_JRubies
-| timechart span=300s avg(Free_JRubies) as "Free JRubies"</query>
+| timechart span=300s avg(Free_JRubies) as "Free JRubies" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -398,10 +398,10 @@
       <chart>
         <title>Average Wait Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetserver
 | rename jruby-metrics.status.experimental.metrics.average-wait-time as Wait_Time
 | eval Wait_Time=Wait_Time/1000
-| timechart span=300s values(Wait_Time) as "Wait Time"</query>
+| timechart span=300s values(Wait_Time) as "Wait Time" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1000,10 +1000,10 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Commands Per Second</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename global_processed.FiveMinuteRate as "Commands per Second"
 | eval 'Commands per Second'='Commands per Second'/300
-| timechart span=300s list('Commands per Second') as "Commands per Second"</query>
+| timechart span=300s list('Commands per Second') as "Commands per Second" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1051,9 +1051,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Command Processing Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename global_processing-time.95thPercentile as "Command Processing Time"
-| timechart span=300s list("Command Processing Time") as "Command Processing Time"</query>
+| timechart span=300s list("Command Processing Time") as "Command Processing Time" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1103,9 +1103,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Queue Depth</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename puppetdb-status.status.queue_depth as "Queue Depth"
-| timechart span=300s list("Queue Depth") as "Queue Depth"</query>
+| timechart span=300s list("Queue Depth") as "Queue Depth" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1155,9 +1155,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Replace Catalog Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename storage_replace-catalog-time.95thPercentile as "Replace Catalog Time"
-| timechart span=300s list("Replace Catalog Time") as "Replace Catalog Time"</query>
+| timechart span=300s list("Replace Catalog Time") as "Replace Catalog Time" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1205,9 +1205,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Replace Facts Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename storage_replace-facts-time.95thPercentile as "Replace Facts Time"
-| timechart span=300s list("Replace Facts Time") as "Replace Facts Time"</query>
+| timechart span=300s list("Replace Facts Time") as "Replace Facts Time" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1255,9 +1255,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Store Report Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename storage_store-report-time.95thPercentile as "Store Report Time"
-| timechart span=300s list("Store Report Time") as "Store Report Time"</query>
+| timechart span=300s list("Store Report Time") as "Store Report Time" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1411,9 +1411,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Average Command Persistence Time</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename global_message-persistence-time.95thPercentile as "Command Persistence Time"
-| timechart span=300s avg("Command Persistence Time") as "Average Command Persistence Time"</query>
+| timechart span=300s avg("Command Persistence Time") as "Average Command Persistence Time" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1463,9 +1463,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Average Read Duration</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename  PDBReadPool_pool_Usage.95thPercentile as "Read Duration"
-| timechart span=300s avg("Read Duration") as "Average Read Duration"</query>
+| timechart span=300s avg("Read Duration") as "Average Read Duration" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1513,9 +1513,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Peak Read Pool Wait</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename PDBReadPool_pool_Wait.999thPercentile as "Read Pool Wait"
-| timechart span=300s values("Read Pool Wait") as "Peak Read Pool Wait"</query>
+| timechart span=300s values("Read Pool Wait") as "Peak Read Pool Wait" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1563,9 +1563,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Read Pool Pending Connections</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename PDBReadPool_pool_PendingConnections.Value as "Read Pool Pending"
-| timechart span=300s values("Read Pool Pending") as "Read Pool Pending Connections"</query>
+| timechart span=300s values("Read Pool Pending") as "Read Pool Pending Connections" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1615,9 +1615,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Average Write Duration</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename PDBWritePool_pool_Usage.95thPercentile as "Write Duration"
-| timechart span=300s avg("Write Duration") as "Average Write Duration"</query>
+| timechart span=300s avg("Write Duration") as "Average Write Duration" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1665,9 +1665,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Peak Write Pool Wait</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename PDBWritePool_pool_Wait.999thPercentile as "Write Pool Wait"
-| timechart span=300s values("Write Pool Wait") as "Peak Write Pool Wait"</query>
+| timechart span=300s values("Write Pool Wait") as "Peak Write Pool Wait" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1715,9 +1715,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Write Pool Pending Connections</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename PDBWritePool_pool_PendingConnections.Value as "Write Pool Pending"
-| timechart span=300s values("Write Pool Pending") as "Write Pool Pending Connections"</query>
+| timechart span=300s values("Write Pool Pending") as "Write Pool Pending Connections" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1767,9 +1767,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Global Discards</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename global_discarded.OneMinuteRate as "Global Discards"
-| timechart span=300s values("Global Discards") as "Global Discards"</query>
+| timechart span=300s values("Global Discards") as "Global Discards" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1817,9 +1817,9 @@ jruby-metrics.status.experimental.metrics.borrow-timers.puppet-v3-node.rate as N
       <chart>
         <title>Global Fatals</title>
         <search>
-          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb $host$
+          <query>`puppet_metrics_index` sourcetype="puppet:metrics" pe_service=puppetdb
 | rename global_fatal.OneMinuteRate as "Global Fatals"
-| timechart span=300s values("Global Fatals") as "Global Fatals"</query>
+| timechart span=300s values("Global Fatals") as "Global Fatals" by host</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
