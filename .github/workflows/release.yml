@@ -1,0 +1,27 @@
+name: Package Splunk App
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+
+jobs:
+  package-app:
+    runs-on: ubuntu-latest
+    container: ghcr.io/coreymbe/splunk-appinspect:v2
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set Version ID
+        id: version-tag
+        run: echo ::set-output name=version::${GITHUB_REF#refs/*/}
+
+      - name: Build and Package App
+        run: slim package TA-puppet-report-viewer
+
+      - name: Upload App Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: TA-puppet-report-viewer-${{ steps.version-tag.outputs.version }}
+          path: TA-puppet-report-viewer-*.tar.gz

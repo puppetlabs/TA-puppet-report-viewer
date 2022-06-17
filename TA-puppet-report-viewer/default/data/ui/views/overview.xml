@@ -74,7 +74,7 @@
           <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | search corrective_change=true
 | dedup certname 
-| stats count(corrective_change) by _time</query>
+| stats count(corrective_change)</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
           <refresh>10m</refresh>
@@ -110,7 +110,7 @@
           <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | search status=failed
 | dedup certname 
-| stats count(status) by _time</query>
+| stats count(status)</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
           <latest>$overviewTimeRange.latest$</latest>
           <refresh>10m</refresh>
@@ -141,6 +141,7 @@
   <row>
     <panel depends="$title2$">
       <table>
+        <title>Corrective Changes</title>
         <search>
           <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | search corrective_change=true
@@ -158,6 +159,7 @@
   <row>
     <panel depends="$title3$">
       <table>
+        <title>Failures</title>
         <search>
           <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$
 | search status=failed 
@@ -181,6 +183,7 @@
   <row>
     <panel>
       <table depends="$title1$">
+        <title>Managed Hosts</title>
         <search>
           <query>`puppet_summary_index` sourcetype="puppet:summary" $pe_console$ |dedup host | stats sparkline  avg(metrics.time.catalog_application) as Application avg(metrics.time.config_retrieval) as Retrieval avg(metrics.time.fact_generation) as Generation avg(metrics.time.total) as Total by host  | rename host as Host | table Host sparkline Application Retrieval Generation Total</query>
           <earliest>$overviewTimeRange.earliest$</earliest>
@@ -188,7 +191,6 @@
         </search>
         <option name="count">10</option>
         <option name="drilldown">none</option>
-        <option name="refresh.display">progressbar</option>
       </table>
     </panel>
   </row>
