@@ -31,9 +31,9 @@ Create an Splunk HEC token for the app:
 
 After configuring both `splunk_hec` and the `puppet_metrics_collector` the Overview tab will start showing data from Puppet reports, while the Metrics tab will start displaying graphs related to a number of useful Puppet metrics.
 
-![Reports Overview](https://raw.githubusercontent.com/puppetlabs/TA-puppet-report-viewer/main/TA-puppet-report-viewer/README/img/overview.png)
+![Reports Overview](https://raw.githubusercontent.com/puppetlabs/TA-puppet-report-viewer/main/TA-puppet-report-viewer/readme/img/overview.png)
 
-![Metrics](https://raw.githubusercontent.com/puppetlabs/TA-puppet-report-viewer/main/TA-puppet-report-viewer/README/img/metrics.png)
+![Metrics](https://raw.githubusercontent.com/puppetlabs/TA-puppet-report-viewer/main/TA-puppet-report-viewer/readme/img/metrics.png)
 
 ## Advanced Configuration
 
