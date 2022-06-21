@@ -15,6 +15,7 @@
         <earliest>-24h@h</earliest>
         <latest>now</latest>
       </search>
+      <selectFirstChoice>true</selectFirstChoice>
     </input>
     <input type="dropdown" token="metric" searchWhenChanged="true">
       <label>Metrics</label>
@@ -63,6 +64,7 @@
         <earliest>$field2.earliest$</earliest>
         <latest>$field2.latest$</latest>
       </search>
+      <selectFirstChoice>true</selectFirstChoice>
     </input>
     <input type="time" token="field2" searchWhenChanged="true">
       <label>Time Range</label>
