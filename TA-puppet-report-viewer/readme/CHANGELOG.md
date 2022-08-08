@@ -1,5 +1,13 @@
 # Release Notes
 
+## Version 4.0.1
+
+**New Features**:
+
+  * Adds the following custom source types for PE Console, PE Orchestrator, PuppetDB and Puppet Server logs:
+    * `puppet:access_logs`
+    * `puppet:service_logs`
+
 ## Version 4.0.0
 
 **Breaking Changes**:
