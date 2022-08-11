@@ -8,6 +8,10 @@
     * `puppet:access_logs`
     * `puppet:service_logs`
 
+**Fixes**:
+
+  * Updates Alert Actions dashboard to ensure only results from triggered alert actions are displayed.
+
 ## Version 4.0.0
 
 **Breaking Changes**:

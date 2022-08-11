@@ -15,7 +15,7 @@
       <title>Alert actions responses (if successfully run)</title>
       <table>
         <search>
-          <query>`puppet_actions_index` sourcetype="puppet:action" | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | table Time host action_name action_state joburl message</query>
+          <query>`puppet_actions_index` sourcetype="puppet:action" action_name | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | table Time host action_name action_state joburl message</query>
           <earliest>$boltTimeRange.earliest$</earliest>
           <latest>$boltTimeRange.latest$</latest>
         </search>
