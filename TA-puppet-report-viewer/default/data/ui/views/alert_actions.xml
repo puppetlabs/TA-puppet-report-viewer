@@ -43,10 +43,10 @@
   </row>
   <row>
     <panel>
-      <title>Splunk modalert Tasks (investigate, act, etc) logs</title>
+      <title>Splunk modalert Tasks and Plans (investigate, act, etc) logs</title>
       <table>
         <search>
-          <query>index=_internal sourcetype=splunkd component=sendmodalert (action="puppet_run_task_investigate" OR action="puppet_run_task" OR action="puppet_run_task_act") | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | rename event_message as "Event" | rename action as Action | table Time Action splunk_server Event</query>
+          <query>index=_internal sourcetype=splunkd component=sendmodalert (action=puppet_run_task* OR action=puppet_run_plan*) | eval strf_time=strftime(_time, "%Y-%m-%d %T %:z") | rename strf_time as "Time" | rename event_message as "Event" | rename action as Action | table Time Action splunk_server Event</query>
           <earliest>$boltTimeRange.earliest$</earliest>
           <latest>$boltTimeRange.latest$</latest>
         </search>

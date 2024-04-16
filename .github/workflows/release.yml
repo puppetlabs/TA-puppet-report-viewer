@@ -11,7 +11,7 @@ jobs:
     container: ghcr.io/coreymbe/splunk-appinspect:v2
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set Version ID
         id: version-tag
@@ -21,7 +21,7 @@ jobs:
         run: slim package TA-puppet-report-viewer
 
       - name: Upload App Build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: TA-puppet-report-viewer-${{ steps.version-tag.outputs.version }}
           path: TA-puppet-report-viewer-*.tar.gz
