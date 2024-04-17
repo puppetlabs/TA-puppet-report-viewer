@@ -30,13 +30,13 @@ Create an Splunk HEC token for the app:
   * Click **Review** and then **Submit**.
   * When complete the HEC token should look something like this:
 
-  ![hec_token](https://raw.githubusercontent.com/puppetlabs/puppetlabs-splunk_hec/main/docs/images/hec_token.png)
+  ![hec_token](297570e2-f1b0-11ec-ada5-56570d6f424e.png)
 
 After configuring `splunk_hec`, `puppet_metrics_collector`, and `pe_status_check` the Overview tab will start showing data from Puppet reports, while the PE Metrics tab will start displaying graphs related to a number of useful Puppet metrics and results of status checks.
 
-![Reports Overview](https://raw.githubusercontent.com/puppetlabs/TA-puppet-report-viewer/main/TA-puppet-report-viewer/readme/img/overview.png)
+![Reports Overview](1304dd3e-f1b0-11ec-bf36-3691ecc87010.png)
 
-![Metrics](https://raw.githubusercontent.com/puppetlabs/TA-puppet-report-viewer/main/TA-puppet-report-viewer/readme/img/metrics.png)
+![Metrics](183aad88-f1b0-11ec-9fc7-a60803d6ab2e.png)
 
 ### Custom Source Types
 

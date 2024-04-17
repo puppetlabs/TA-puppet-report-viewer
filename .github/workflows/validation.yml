@@ -11,7 +11,7 @@ jobs:
     container: ghcr.io/coreymbe/splunk-appinspect:v2
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install JQ
         run: apt update && apt install -y jq
@@ -33,18 +33,18 @@ jobs:
 
       - name: AppInspect Errors
         if: ${{ steps.appinspect-errors.outputs.error_count > 0 }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: core.setFailed('AppInspect contains errors!')
 
       - name: AppInspect Failures
         if: ${{ steps.appinspect-failures.outputs.fail_count > 0 }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: core.setFailed('AppInspect contains failures!')
 
       - name: Upload AppInspect Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: AppInspect_TA-puppet-report-viewer
           path: appinspect_result.json

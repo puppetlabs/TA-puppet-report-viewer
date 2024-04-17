@@ -5,12 +5,12 @@
     "id": {
       "group": null,
       "name": "TA-puppet-report-viewer",
-      "version": "4.0.1"
+      "version": "4.0.2"
     },
     "author": [
       {
         "name": "Puppet, Inc.",
-        "email": "team-pie@puppet.com",
+        "email": "team-pie@perforce.com",
         "company": null
       }
     ],
