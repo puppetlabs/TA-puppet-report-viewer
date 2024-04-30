@@ -1,5 +1,13 @@
 # Release Notes
 
+## Version 4.0.2
+
+**New Features**:
+
+**Fixes**:
+
+  * Updates Alert Actions dashboard to ensure relevant data from triggered alert action "Run a Puppet Plan" are displayed.
+
 ## Version 4.0.1
 
 **New Features**:

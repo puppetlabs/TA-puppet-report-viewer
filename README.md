@@ -12,11 +12,11 @@
 
 This Splunk app provides custom source types and views into the status of Puppet installations that are configured to send reports, facts and metrics with the [`splunk_hec`](https://forge.puppet.com/puppetlabs/splunk_hec), [`puppet_metrics_collector`](https://forge.puppet.com/puppetlabs/puppet_metrics_collector) and [`pe_status_check`](https://forge.puppet.com/puppetlabs/pe_status_check) Puppet modules.
 
-You can take action on this data by connecting a Splunk installation to the PE Orchestration service via the [Puppet Alert Orchestrator add-on for Splunk](https://splunkbase.splunk.com/app/4928/).
+You can take action on this data by connecting a Splunk installation to the PE Orchestration service via the [Puppet Alert Orchestrator add-on for Splunk](https://splunkbase.splunk.com/app/7318/).
 
 ## Configuration
 
-Once the application has been installed follow the steps below to configure the [Puppet Report Viewer](https://splunkbase.splunk.com/app/4413/):
+Once the application has been installed follow the steps below to configure the [Puppet Report Viewer app for Splunk](https://splunkbase.splunk.com/app/4413/):
 
 Create an Splunk HEC token for the app:
 
@@ -158,7 +158,7 @@ Upon reloading the **Overview** tab in the Puppet Report Viewer app, and you sho
 
 If the Puppet Report Viewer does not appear to show any data after you have followed the configuration steps for both this app and the [splunk_hec](https://github.com/puppetlabs/puppetlabs-splunk_hec) module; first check that data is being successfully sent to the Splunk server by following the [troubleshooting and verification](https://github.com/puppetlabs/puppetlabs-splunk_hec/blob/main/docs/troubleshooting_and_verification.md) steps in the `splunk_hec` documentation.
 
-If events in the `puppet:detailed` source type is not showing up in search, it means that the "Generate a Detailed Report" Alert is not configured properly with the [Puppet Alert Orchestrator](https://splunkbase.splunk.com/app/4928/) add-on. If this Alert is enabled, and the aforementioned add-on is configured, you can view the logs with the following Splunk search:
+If events in the `puppet:detailed` source type is not showing up in search, it means that the "Generate a Detailed Report" Alert is not configured properly with the [Puppet Alert Orchestrator](https://splunkbase.splunk.com/app/7318/) add-on. If this Alert is enabled, and the aforementioned add-on is configured, you can view the logs with the following Splunk search:
 
 ```
 index=_internal sourcetype=splunkd component=sendmodalert (action="puppet_run_task_investigate" OR action="puppet_run_task" OR action="puppet_run_task_act" OR action="puppet_generate_detailed_report")
