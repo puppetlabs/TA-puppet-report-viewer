@@ -8,20 +8,26 @@ on:
 jobs:
   package-app:
     runs-on: ubuntu-latest
-    container: ghcr.io/coreymbe/splunk-appinspect:v2
+    container: ghcr.io/coreymbe/splunk-appinspect:v3
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set Version ID
         id: version-tag
-        run: echo ::set-output name=version::${GITHUB_REF#refs/*/}
+        run: echo "version=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+      - name: Set App Name
+        id: repo-name
+        run: |
+          repo_name=$(basename ${{ github.repository }})
+          echo "splunk_app=$repo_name" >> $GITHUB_OUTPUT
 
       - name: Build and Package App
-        run: slim package TA-puppet-report-viewer
+        run: slim package ${{ steps.repo-name.outputs.splunk_app }}
 
       - name: Upload App Build
         uses: actions/upload-artifact@v4
         with:
-          name: TA-puppet-report-viewer-${{ steps.version-tag.outputs.version }}
-          path: TA-puppet-report-viewer-*.tar.gz
+          name: ${{ steps.repo-name.outputs.splunk_app }}-${{ steps.version-tag.outputs.version }}
+          path: ${{ steps.repo-name.outputs.splunk_app }}-*.tar.gz

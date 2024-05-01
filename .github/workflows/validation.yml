@@ -8,28 +8,31 @@ on:
 jobs:
   appinspect:
     runs-on: ubuntu-latest
-    container: ghcr.io/coreymbe/splunk-appinspect:v2
+    container: ghcr.io/coreymbe/splunk-appinspect:v3
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install JQ
-        run: apt update && apt install -y jq
+      - name: Set App Name
+        id: repo-name
+        run: |
+          repo_name=$(basename ${{ github.repository }})
+          echo "splunk_app=$repo_name" >> $GITHUB_OUTPUT
 
       - name: Run AppInspect
-        run: splunk-appinspect inspect TA-puppet-report-viewer --output-file appinspect_result.json --mode precert
+        run: splunk-appinspect inspect ${{ steps.repo-name.outputs.splunk_app }} --output-file appinspect_result.json --mode precert --included-tags cloud
 
       - name: Check AppInspect Errors
         id: appinspect-errors
         run: |
           error_check=$(jq '.summary.error' appinspect_result.json)
-          echo "::set-output name=error_count::$error_check"
+          echo "error_count=$error_check" >> $GITHUB_OUTPUT
 
       - name: Check AppInspect Failures
         id: appinspect-failures
         run: |
           fail_check=$(jq '.summary.failure' appinspect_result.json)
-          echo "::set-output name=fail_count::$fail_check"
+          echo "fail_count=$fail_check" >> $GITHUB_OUTPUT
 
       - name: AppInspect Errors
         if: ${{ steps.appinspect-errors.outputs.error_count > 0 }}
@@ -46,5 +49,5 @@ jobs:
       - name: Upload AppInspect Results
         uses: actions/upload-artifact@v4
         with:
-          name: AppInspect_TA-puppet-report-viewer
+          name: AppInspect_${{ steps.repo-name.outputs.splunk_app }}
           path: appinspect_result.json
